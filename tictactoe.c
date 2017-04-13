@@ -27,7 +27,7 @@ int main() {
 		
 	for(turns = 0; turns < 9; turns++) {
 		//Places 'X' or 'O' on the appropriate position in matrix
-		player = ++player % 2;
+		player = (player % 2) + 1;
 		do{	
 			do{
 				printf((player == 1) ? "Player 1 (X) turn: " : "Player 2 (O) turn: ");
