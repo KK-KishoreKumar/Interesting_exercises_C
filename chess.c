@@ -8,10 +8,11 @@
 #include <string.h>
 #define SIZE 8
 #define MAX_BUFFER 7
-#define RED "\x1b[31m"
-#define GREEN   "\x1b[32m"
-#define YELLOW  "\x1b[33m"
-#define CL_RESET   "\x1b[0m"
+#define RED "\x1b[37;3;1m"
+#define BLUE  "\x1b[36;3;1m"
+#define BG_WHITE "\x1b[40m"
+#define BG_YELLOW "\x1b[41m"
+#define CL_RESET  "\x1b[0m"
 typedef struct board_st{
 	int type;
 	int player;
@@ -28,7 +29,7 @@ int winner = 0;
 int player = 0;
 
 int main () {
-	printf(GREEN   "Player 1"   CL_RESET "\n");
+	printf(BLUE "Player 1"   CL_RESET "\n");
 	printf(RED  "Player 2"  CL_RESET "\n");
 	
 	int i = 0, j = 0;
@@ -41,7 +42,7 @@ int main () {
 	do{
 		i = 0;
 		do {
-			printf(player == 0 ? GREEN "Player 1: " CL_RESET : RED  "Player 2: "  CL_RESET);
+			printf(player == 0 ? BLUE "Player 1: " CL_RESET : RED  "Player 2: "  CL_RESET);
 			fgets(buffer, MAX_BUFFER, stdin);
 			if(!strncmp(buffer, "/ff", 3)) {
 				printf("\nPlayer %d won!\n", player == 0 ? 2 : 1);
@@ -298,9 +299,11 @@ void print_matrix(BOARD (*board)[SIZE]) {
 		printf(CL_RESET "\t%d | ", SIZE - i);
 		for(j = 0; j < SIZE; j++) {
 			switch(board[i][j].type) {
-				case 0 : printf(k%2 == 1 ? YELLOW "# " : CL_RESET "# "); break;
-				case 'K' : case 'L' : case 'S' : case 'D' : case 'T' : case 'P': 
-					printf(board[i][j].player == 1 ? RED "%c " CL_RESET : GREEN "%c " CL_RESET , board[i][j].type); break;
+				case 0 : printf(k%2 == 1 ? BG_YELLOW  "  " : BG_WHITE  "  "); break;
+				case 'K' : case 'L' : case 'S' : case 'D' : case 'T' : case 'P':
+					printf(k%2 == 1 ? BG_YELLOW : BG_WHITE);
+					printf(board[i][j].player == 1 ? RED "%c " CL_RESET 
+														: BLUE  "%c " CL_RESET , board[i][j].type); break;
 			}
 			k = (k+1)%2;
 		}
