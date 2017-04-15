@@ -9,7 +9,7 @@
 #define SIZE 8
 #define MAX_BUFFER 7
 #define RED "\x1b[37;3;1m"
-#define BLUE  "\x1b[36;3;1m"
+#define BLUE  "\x1b[35;3;1m"
 #define BG_WHITE "\x1b[40m"
 #define BG_YELLOW "\x1b[41m"
 #define CL_RESET  "\x1b[0m"
@@ -17,21 +17,23 @@ typedef struct board_st{
 	int type;
 	int player;
 	int state;
+	int *danger;
 } BOARD;
 void print_matrix(BOARD (*board)[SIZE]);
 void init_board(BOARD (*board)[SIZE]);
 void usage_tip(void);
-int syntax_check(char *p);
-int command_check(BOARD (*board)[SIZE], char *p);
-void remove_piece(BOARD *piece);
+int syntax_check(char *);
+int command_check(BOARD (*board)[SIZE], char *);
+void rm_piece(BOARD *piece);
+void rm_danger(BOARD (*board)[SIZE], int, int, int);
+void update_danger(BOARD (*board)[SIZE]);
+int checkmate(BOARD (*board)[SIZE], int, int);
+void print_danger(BOARD (*board)[SIZE], int k);
 
 int winner = 0;
 int player = 0;
-
+int check = 0;
 int main () {
-	printf(BLUE "Player 1"   CL_RESET "\n");
-	printf(RED  "Player 2"  CL_RESET "\n");
-	
 	int i = 0, j = 0;
 	BOARD board [SIZE][SIZE];
 	
@@ -69,7 +71,7 @@ int main () {
 			board[i][j].type = promotion;
 			print_matrix(board);
 		}
-		
+		update_danger(board);
 		player = (player+1)%2;
 	}while(!winner);
 	
@@ -77,15 +79,146 @@ int main () {
 	
 	return EXIT_SUCCESS;
 }
+void update_danger(BOARD (*board)[SIZE]) {
+	int i, j, p;
+	for(i = 0; i < SIZE; i++) {
+		for(j = 0; j < SIZE; j++) {
+			p = board[i][j].player;
+			switch(board[i][j].type) {
+				case 'P':
+					if(p) {
+						if(i+1 < SIZE) {
+							if(j+1 < SIZE) board[i+1][j+1].danger[p] = 'P';
+							if(j-1 >= 0) board[i+1][j-1].danger[p] = 'P';
+						}
+					}
+					else {
+						if(i-1 >= 0) {
+							if(j+1 < SIZE) board[i-1][j+1].danger[p] = 'P';
+							if(j-1 >= 0) board[i-1][j-1].danger[p] = 'P';
+						}
+					}
+				break;
+				case 'S':
+					if(i+1 < SIZE) {
+						if(j+2<SIZE) board[i+1][j+2].danger[p] = 'S';
+						if(j-2>=0) board[i+1][j-2].danger[p] = 'S';
+					}
+					if(i-1 >= 0) {
+						if(j+2<SIZE) board[i-1][j+2].danger[p] = 'S';
+						if(j-2>=0) board[i-1][j-2].danger[p] = 'S';
+					}
+					if(i+2 < SIZE) {
+						if(j+1<SIZE) board[i+2][j+1].danger[p] = 'S';
+						if(j-1>=0) board[i+2][j-1].danger[p] = 'S';
+					}
+					if(i-2 >= 0) {
+						if(j+1<SIZE) board[i-2][j+1].danger[p] = 'S';
+						if(j-1>=0) board[i-2][j-1].danger[p] = 'S';
+					}
+				break;
+			}
+		}
+	}
+	for(i = 0; i < SIZE; i++) {
+		for(j = 0; j < SIZE; j++) {
+			if(board[i][j].type == 'K' && board[i][j].player != player  
+			&& board[i][j].danger[player] != 0) {
+				if(checkmate(board, i, j)) {
+					print_danger(board, player);
+					printf("Checkmate!\nPlayer %d has won!\n", player+1);
+					exit(EXIT_SUCCESS);
+				}
+				printf("Check!\nKing is under attack!\n");
+				check = 1;
+				goto CONT;
+			}
+		}
+	}
+CONT:
+	puts("after move:");
+	print_danger(board, player);
+}
+int checkmate(BOARD (*board)[SIZE], int i, int j) {
+	//Current player is the one attacking (player+1)%2s king
+	//Checks if king can move 
+	if(i-1>=0) {
+		if(j-1>=0) 
+			if(board[i-1][j-1].player != player 
+				&& board[i-1][j-1].danger[player] == 0) return 0;
+		if(j+1<SIZE) 
+			if(board[i-1][j+1].player != player 
+				&& board[i-1][j+1].danger[player] == 0) return 0;
+		if(board[i-1][j].player != player 
+			&& board[i-1][j].danger[player] == 0) return 0;
+	}
+	if(i+1<SIZE) {
+		if(j-1>=0) 
+			if(board[i+1][j-1].player != player 
+				&& board[i+1][j-1].danger[player] == 0) return 0;
+		if(j+1<SIZE) 
+			if(board[i+1][j+1].player != player 
+				&& board[i+1][j+1].danger[player] == 0) return 0;
+		if(board[i+1][j].player != player 
+			&& board[i+1][j].danger[player] == 0) return 0;
+	}
+	if(j-1>=0) 
+		if(board[i][j-1].player != player 
+			&& board[i][j-1].danger[player] == 0) return 0;
+	if(j+1<SIZE) 
+		if(board[i][j+1].player != player 
+			&& board[i][j+1].danger[player] == 0) return 0;
+	//Add test if other figures can destroy the piece that is a threat to king later
+	return 1;
+}
+void rm_danger(BOARD (*board)[SIZE], int piece, int i, int j) {
+	int p, k;
+	switch(board[i][j].type) {
+		case 'P': 
+			if(player) {
+				if(i+1 < SIZE) {
+					if(j+1 < SIZE) board[i+1][j+1].danger[player] = 0;
+					if(j-1 >= 0) board[i+1][j-1].danger[player] = 0;
+				}
+			}
+			else {
+				if(i-1 >= 0) {
+					if(j+1 < SIZE) board[i-1][j+1].danger[player] = 0;
+					if(j-1 >= 0) board[i-1][j-1].danger[player] = 0;
+				}
+			}
+		break;
+		case 'S':
+			if(i+1 < SIZE) {
+				if(j+2<SIZE) board[i+1][j+2].danger[player] = 0;
+				if(j-2>=0) board[i+1][j-2].danger[player] = 0;
+			}
+			if(i-1 >= 0) {
+				if(j+2<SIZE) board[i-1][j+2].danger[player] = 0;
+				if(j-2>=0) board[i-1][j-2].danger[player] = 0;
+			}
+			if(i+2 < SIZE) {
+				if(j+1<SIZE) board[i+2][j+1].danger[player] = 0;
+				if(j-1>=0) board[i+2][j-1].danger[player] = 0;
+			}
+			if(i-2 >= 0) {
+				if(j+1<SIZE) board[i-2][j+1].danger[player] = 0;
+				if(j-1>=0) board[i-2][j-1].danger[player] = 0;
+			}
+		break;
+	}
+	puts("after free:");
+	print_danger(board, player);
+}
 int command_check(BOARD (*board)[SIZE], char *s) {
-	int i1, j1, i2, j2, piece, k, p, castling = 0;
+	int i1, j1, i2, j2, piece, absi, absj, k, p, castling = 0;
+	
 	piece = *s++;
 	j1 = *s++ - 'a';
 	i1 = SIZE - (*s++ - '0');
 	j2 = *s++ - 'a';
 	i2 = SIZE - (*s++ - '0');
 	
-	/*Following if and switch check if the given command is valid.*/
 	if(board[i1][j1].player != player) {
 		puts("error: you are trying to move an empty/enemy piece.");
 		return 0;
@@ -94,10 +227,12 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 		printf("error: you tried to move '%c', but '%c' is on position '%c%c'.\n", piece, board[i1][j1].type, (j1+'a'), (-i1+SIZE+'0'));
 		return 0;
 	}
+	absi = abs(i1 - i2);
+	absj = abs(j1 - j2);
 	switch(piece) {
 		case 'P': 
 			if(j1!=j2) {	
-				if(abs(j1-j2) > 1) {
+				if(absj > 1) {
 					printf("error: pawn can only move vertical. (diagonally is exeption for eating enemy piece).\n");
 					return 0;
 				}
@@ -110,11 +245,11 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 				puts("error: pawn can't go backwards!");
 				return 0;
 			}
-			if(board[i1][j1].state == 0 ? abs(i1-i2)>2 : abs(i1-i2)>1) {
+			if(board[i1][j1].state == 0 ? absi>2 : absi>1) {
 				puts("error: pawn can move 2 steps forward if first move, and 1 step if not.");
 				return 0;
 			}
-			if(board[i1][j1].state == 0 && abs(i1-i2) == 2) {
+			if(board[i1][j1].state == 0 && absi == 2) {
 				if(i1 > i2 ? board[i1-1][j1].type != 0 : board[i1+1][j1].type != 0) {
 					puts("error: another piece is blocking the path.");
 					return 0;
@@ -126,63 +261,68 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 			}
 			break;
 		case 'S':
-			if(abs(i1-i2) < 1 || abs(i1-i2) > 2 || abs(j1-j2) < 1 || abs(j1-j2) > 2) {
+			if(absi < 1 || absi > 2 || absj < 1 || absj > 2) {
 				puts("error: knight can only move in 'L'-shape.");
 				return 0;
 			}
-			if(!((abs(i1-i2) == 1 && abs(j1-j2) ==2) || (abs(i1 -i2) == 2 && abs(j1 - j2) == 1))) {
+			if(!((absi == 1 && absj ==2) || (absi == 2 && absj == 1))) {
 				puts("error: knight can only move in 'L'-shape. ");
 				return 0;
 			} 
 			break;
 		case 'K':
-			if (i1 == i2 && abs(j1-j2) == 2 && board[i1][j1].state == 0) {
+			//Checks if castling move first
+			if (!check && i1 == i2 && absj == 2 && board[i1][j1].state == 0) {
 				if(j1 < j2) {
-					if(board[i1][SIZE-1].type == 'T' && board[i1][SIZE-1].state == 0) {
-						for(k = 1; k < 2; k++) {
-							if(board[i1][j1+k].type != 0) {
-								puts("error: obstacle blocking path for castling move.");
+					if(board[i1][SIZE-1].type == 'T' && board[i1][SIZE-1].state == 0
+						&& board[i1][SIZE-1].player == player && !board[i1][SIZE-1].danger[(player+1)%2]) {
+						for(k = 1; k <= 2; k++) {
+							if(board[i1][j1+k].type != 0 
+								|| board[i1][j1+k].danger[(player+1)%2] != 0) {
+								puts("error: path for castling move is blocked / under attack.");
 								return 0;
 							}
 						}
-						castling = 1;
 					}
 					else {
-						puts(board[i1][j1].state == 0 ? "error: rook has already been moved" 
-																  : "error: king can only move one step in any direction.");
+						puts("error: castling unavailable.");
 						return 0;
 					}
 				}
 				else {
-					if(board[i1][0].type == 'T' && board[i1][0].state == 0) {
+					if(board[i1][0].type == 'T' && board[i1][0].state == 0
+						&& board[i1][0].player == player && !board[i1][0].danger[(player+1)%2]) {
 						for(k = 1; k < j1; k++) {
-							if(board[i1][j1-k].type != 0) {
-								puts("error: obstacle blocking path for castling move.");
+							if(board[i1][j1-k].type != 0
+								|| board[i1][j1-k].danger[(player+1)%2] != 0) {
+								puts("error: path for castling move is blocked / under attack.");
 								return 0;
 							}
 						}
-						castling = 1;
 					}
 					else {
-						puts(board[i1][j1].state == 0 ? "error: rook has already been moved" 
-																  : "error: king can only move one step in any direction.");
+						puts("error: castling unavailable.");
 						return 0;
 					}
 				}
+				castling = 1;
 			}
-			else if(abs(i1-i2)>1 || abs(j1-j2)>1) {
+			else if(absi>1 || absj>1) {
 				puts("error: king can only move one step in any direction.");
 				return 0;
 			}
-			/*note: upgrade castling move later*/
+			else if(check && board[i2][j2].danger[(player+1)%2] != 0) {
+				printf("error: Destination '%c%c' is under attack.\n", (j1+'a'), (-i1+SIZE+'0') );
+				return 0;
+			}
 			break;
 		case 'L':
-			if(abs(i1-i2) != abs(j1-j2)) {
+			if(absi != absj) {
 				puts("error: bishop can only move diagonally.");
 				return 0;
 			}
 			/*checks if there is an obsticle in diagonal path*/
-			for(k = 1, p = abs(i1-i2); k < p; k++) {
+			for(k = 1, p = absi; k < p; k++) {
 					if(i1 > i2) {
 						if(j1 < j2 ? board[i1 - k][j1+k].type != 0 : board[i1 - k][j1-k].type != 0) {
 							puts("error: another piece is blocking the path.");
@@ -200,7 +340,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 				puts("error: rook can only move vertically or horizontally");
 				return 0;
 			}
-			for(k = 1, p = (i1 == i2) ? abs(j1-j2) : abs(i1-i2); k < p; k++) 
+			for(k = 1, p = (i1 == i2) ? absj : absi; k < p; k++) 
 				if(i1 == i2) {
 					if(j1 > j2 ? board[i1][j1-k].type != 0 : board[i1][j1+k].type != 0) {
 						puts("error: another piece is blocking the path.");
@@ -213,8 +353,8 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 				}
 			break;
 		case 'D':
-			if(abs(i1-i2) == abs(j1-j2)) {
-				for(k = 1, p = abs(i1-i2); k < p; k++) 
+			if(absi == absj) {
+				for(k = 1, p = absi; k < p; k++) 
 					if(i1 > i2) {
 						if(j1 < j2 ? board[i1 - k][j1+k].type != 0 : board[i1 - k][j1-k].type != 0) {
 							puts("error: another piece is blocking the path.");
@@ -227,7 +367,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 					}
 			}
 			else if((i1==i2)^(j1==j2)) {
-				for(k = 1, p = (i1 == i2) ? abs(j1-j2) : abs(i1-i2); k < p; k++) 
+				for(k = 1, p = (i1 == i2) ? absj : absi; k < p; k++) 
 					if(i1 == i2) {
 						if(j1 > j2 ? board[i1][j1-k].type != 0 : board[i1][j1+k].type != 0) {
 							puts("error: another piece is blocking the path.");
@@ -255,23 +395,26 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 		printf("\nPlayer %d has won!\n", player+1);
 		exit(EXIT_SUCCESS);
 	}
+	rm_danger(board, piece, i1, j1);
 	
-	board[i2][j2] = board[i1][j1];
+	board[i2][j2].type = board[i1][j1].type;
+	board[i2][j2].player = board[i1][j1].player;
 	board[i2][j2].state = 1;	
-	remove_piece(&board[i1][j1]);
+	rm_piece(&board[i1][j1]);
 	
 	if(castling) {
 		p = j1 < j2 ? SIZE - 1 : 0;
 		k = j1 < j2 ? j2 - 1 : j2 + 1;
-		board[i2][k] = board[i2][p];
+		board[i2][k].type = board[i2][p].type;
+		board[i2][k].player = board[i2][p].player;
 		board[i2][k].state = 1;
-		remove_piece(&board[i2][p]);
+		rm_piece(&board[i2][p]);
 	}
-	/*Note: add check later*/
 	/*Note: add En passant move  later*/
 	return 1;
 }
-void remove_piece(BOARD *piece) {
+
+void rm_piece(BOARD *piece) {
 	piece->type = 0;
 	piece->player = -1;
 	piece->state = 0;
@@ -286,6 +429,7 @@ int syntax_check(char *p) {
 	return 1;
 }
 void print_matrix(BOARD (*board)[SIZE]) {
+	//printf("\33[2J");  // cls
 	int i, j, k = 0;
 	printf("\n\t    ");
 	for(i = 0; i < SIZE; printf("%c ", 'a' + i++));
@@ -323,6 +467,7 @@ void init_board(BOARD (*board)[SIZE]) {
 	for(i = 0; i < SIZE; i++) {
 		for(j = 0; j < SIZE; j++) {
 			board[i][j].state = 0;
+			board[i][j].danger = (int *) calloc(2, sizeof(int));
 		}
 	}
 	for(i = 0; i < SIZE; i++) {
@@ -364,4 +509,18 @@ void init_board(BOARD (*board)[SIZE]) {
 }
 void usage_tip(void) {
 	printf("usage example: Pa2a3 (first letter of piece, from (column/row) - to(column/row) *case sensitive*)\n");
+}
+//Used for debuging purpose 
+void print_danger(BOARD (*board)[SIZE], int k) {
+	int i, j;
+	if(k == 0 || k == 1) {
+		printf("Player %d:\n", k+1);
+		for(i = 0; i < SIZE; i++) {
+			printf("\t");
+			for(j = 0; j < SIZE; j++) {
+				printf("%2d ", board[i][j].danger[k]);
+			}
+			puts("");
+		}
+	}
 }
