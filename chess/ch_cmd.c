@@ -1,6 +1,6 @@
 #include "chess.h"
 int command_check(BOARD (*board)[SIZE], char *s) {
-	int i1, j1, i2, j2, piece, absi, absj, k, p;
+	int i1, j1, i2, j2, piece;
 	castling = 0;
 	piece = *s++;
 	j1 = *s++ - 'a';
@@ -31,25 +31,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 		printf("\nPlayer %d has won!\n", player+1);
 		exit(EXIT_SUCCESS);
 	}
-	rm_danger(board, piece, i1, j1);
 	
-	//[i1][j1] piece is being moved to [i2][j2] spot
-	board[i2][j2].type = board[i1][j1].type;
-	board[i2][j2].player = board[i1][j1].player;
-	board[i2][j2].state = 1;	
-	rm_piece(&board[i1][j1]);
-	
-	//castling is being done if called and conditions are fullfiled
-	if(castling) {
-		p = j1 < j2 ? SIZE - 1 : 0;
-		k = j1 < j2 ? j2 - 1 : j2 + 1;
-		board[i2][k].type = board[i2][p].type;
-		board[i2][k].player = board[i2][p].player;
-		board[i2][k].state = 1;
-		rm_piece(&board[i2][p]);
-		castling = 0;
-	}
-	/*Note: add En passant move  later*/
 	return 1;
 }
 
@@ -113,9 +95,13 @@ int knight_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 }
 
 int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
-	int absi, absj, p, k;
+	int absi, absj, k;
 	if(board[i2][j2].player == player) {
 		if(per) puts("error: friendly piece is blocking the path.");
+		return 0;
+	}
+	if(board[i2][j2].danger[(player+1)%2] != 0) {
+		if(per) printf("error: Destination '%c%c' is under attack.\n", (j2+'a'), (-i2+SIZE+'0') );
 		return 0;
 	}
 	absi = abs(i1 - i2);
@@ -158,10 +144,6 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	}
 	else if(absi>1 || absj>1) {
 		if(per) puts("error: king can only move one step in any direction.");
-		return 0;
-	}
-	else if(check && board[i2][j2].danger[(player+1)%2] != 0) {
-		if(per) printf("error: Destination '%c%c' is under attack.\n", (j1+'a'), (-i1+SIZE+'0') );
 		return 0;
 	}
 	return 1;

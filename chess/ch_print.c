@@ -35,50 +35,32 @@ void print_matrix(BOARD (*board)[SIZE]) {
 }
 void init_board(BOARD (*board)[SIZE]) {
 	int i, j;
-	
+
 	for(i = 0; i < SIZE; i++) {
+		board[0][i].player = board[1][i].player = 1;
+		board[1][i].type = board[6][i].type = 'P';
+		board[6][i].player = board[7][i].player = 0;	
+		
 		for(j = 0; j < SIZE; j++) {
 			board[i][j].state = 0;
 			board[i][j].danger = (int *) calloc(2, sizeof(int));
 		}
 	}
-	for(i = 0; i < SIZE; i++) {
-		board[0][i].player = 1;
-	}
-	board[0][0].type = 'T';
-	board[0][1].type = 'S';
-	board[0][2].type = 'L';
-	board[0][3].type = 'D';
-	board[0][4].type = 'K';
-	board[0][5].type = 'L';
-	board[0][6].type = 'S';
-	board[0][7].type = 'T';
-	for(j = 0; j < SIZE; j++) {
-		board[1][j].type = 'P';
-		board[1][j].player = 1;
-	}
+	board[0][0].type = board[0][7].type = board[7][0].type = board[7][7].type =  'T' ;
+	board[0][1].type = board[0][6].type = board[7][1].type = board[7][6].type = 'S' ;
+	board[0][2].type = board[0][5].type = board[7][2].type = board[7][5].type = 'L' ;
+	board[0][3].type = board[7][3].type = 'D' ;
+	board[0][4].type = board[7][4].type = 'K' ;
+	
 	for(i = 2; i < SIZE - 2; i++) {
 		for(j = 0; j < SIZE; j++) {
 			board[i][j].type = 0;
 			board[i][j].player = -1;
 		}
 	}
-	for(j = 0; j < SIZE; j++) {
-		board[6][j].type = 'P';
-		board[6][j].player = 0;
-	}
-	for(i = 0; i < SIZE; i++) {
-		board[7][i].player = 0;
-	}
-	board[7][0].type = 'T' ;
-	board[7][1].type = 'S' ;
-	board[7][2].type = 'L' ;
-	board[7][3].type = 'D' ;
-	board[7][4].type = 'K' ;
-	board[7][5].type = 'L' ;
-	board[7][6].type = 'S' ;
-	board[7][7].type = 'T' ;
+
 }
+
 void usage_tip(void) {
 	printf("usage example: Pa2a3 (first letter of piece, from (column/row) - to(column/row) *case sensitive*)\n");
 }

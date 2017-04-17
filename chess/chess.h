@@ -46,10 +46,24 @@ int rook_check(BOARD (*board)[SIZE], int, int, int, int);
 int bishop_check(BOARD (*board)[SIZE], int, int, int, int);
 int queen_check(BOARD (*board)[SIZE], int, int, int, int);
 
-//danger update functions
-int checkmate(BOARD (*board)[SIZE], int, int);
+//danger remove/update functions
 void rm_piece(BOARD *piece);
 void rm_danger(BOARD (*board)[SIZE], int, int, int);
+void rm_pawn(BOARD (*board)[SIZE], int, int);
+void rm_knight(BOARD (*board)[SIZE], int, int);
+void rm_king(BOARD (*board)[SIZE], int, int);
+void rm_bishop(BOARD (*board)[SIZE], int, int);
+void rm_rook(BOARD (*board)[SIZE], int, int);
+void rm_queen(BOARD (*board)[SIZE], int, int);
+
 void update_danger(BOARD (*board)[SIZE]);
 void update_pawn(BOARD (*board)[SIZE], int, int, int);
 void update_knight(BOARD (*board)[SIZE], int, int, int);
+void update_king(BOARD (*board)[SIZE], int, int, int);
+void update_bishop(BOARD (*board)[SIZE], int, int, int);
+void update_rook(BOARD (*board)[SIZE], int, int, int);
+void update_queen(BOARD (*board)[SIZE], int, int, int);
+
+//checkmate/stalemate functions
+int checkmate(BOARD (*board)[SIZE], int, int);
+int can_kmov(BOARD (*board)[SIZE], int, int, int);

@@ -1,4 +1,6 @@
 #include "chess.h"
+
+//update functions
 void update_danger(BOARD (*board)[SIZE]) {
 	int i, j, p;
 	for(i = 0; i < SIZE; i++) {
@@ -7,27 +9,13 @@ void update_danger(BOARD (*board)[SIZE]) {
 			switch(board[i][j].type) {
 				case 'P': update_pawn(board, i, j, p); break;
 				case 'S': update_knight(board, i, j, p); break;
+				case 'K': update_king(board, i, j, p); break;
+				case 'L': update_bishop(board, i, j, p); break;
+				case 'T': update_rook(board, i, j, p); break;
+				case 'D': update_queen(board, i, j, p); break;
 			}
 		}
 	}
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
-			if(board[i][j].type == 'K' && board[i][j].player != player  
-												&& board[i][j].danger[player] != 0) {
-				if(checkmate(board, i, j)) {
-					//print_danger(board, player);
-					printf("Checkmate!\nPlayer %d has won!\n", player+1);
-					exit(EXIT_SUCCESS);
-				}
-				printf("Check!\nKing is under attack!\n");
-				check = 1;
-				goto CONT;
-			}
-		}
-	}
-CONT:;
-	//puts("after move:");
-	//print_danger(board, player);
 }
 void update_pawn(BOARD (*board)[SIZE], int i, int j, int p) {
 	if(p) {
@@ -59,79 +47,222 @@ void update_knight(BOARD (*board)[SIZE], int i, int j, int p) {
 	if(i-2 >= 0) {
 		if(j+1<SIZE) board[i-2][j+1].danger[p] = 'S';
 		if(j-1>=0) board[i-2][j-1].danger[p] = 'S';
-	}			
+	}		
 }
-int checkmate(BOARD (*board)[SIZE], int i, int j) {
-	//Current player is the one attacking (player+1)%2s king
-	//Checks if king can move 
+void update_king(BOARD (*board)[SIZE], int i, int j, int p) {
 	if(i-1>=0) {
-		if(j-1>=0) 
-			if(board[i-1][j-1].player != player 
-				&& board[i-1][j-1].danger[player] == 0) return 0;
-		if(j+1<SIZE) 
-			if(board[i-1][j+1].player != player 
-				&& board[i-1][j+1].danger[player] == 0) return 0;
-		if(board[i-1][j].player != player 
-			&& board[i-1][j].danger[player] == 0) return 0;
+		if(j-1>=0) board[i-1][j-1].danger[p] = 'K';
+		if(j+1<SIZE) board[i-1][j+1].danger[p] = 'K';
+		board[i-1][j].danger[p] = 'K';
 	}
 	if(i+1<SIZE) {
-		if(j-1>=0) 
-			if(board[i+1][j-1].player != player 
-				&& board[i+1][j-1].danger[player] == 0) return 0;
-		if(j+1<SIZE) 
-			if(board[i+1][j+1].player != player 
-				&& board[i+1][j+1].danger[player] == 0) return 0;
-		if(board[i+1][j].player != player 
-			&& board[i+1][j].danger[player] == 0) return 0;
+		if(j-1>=0) board[i+1][j-1].danger[p] = 'K';
+		if(j+1<SIZE) board[i+1][j+1].danger[p] = 'K';
+		board[i+1][j].danger[p] = 'K';
 	}
-	if(j-1>=0) 
-		if(board[i][j-1].player != player 
-			&& board[i][j-1].danger[player] == 0) return 0;
-	if(j+1<SIZE) 
-		if(board[i][j+1].player != player 
-			&& board[i][j+1].danger[player] == 0) return 0;
-	/*Add test if other figures can destroy the piece that is a threat to king 
-	or block its path later */
-	return 1;
+	if(j-1>=0) board[i][j-1].danger[p] = 'K';
+	if(j+1<SIZE) board[i][j+1].danger[p] = 'K';
 }
-void rm_danger(BOARD (*board)[SIZE], int piece, int i, int j) {
-	int p, k;
-	switch(board[i][j].type) {
-		case 'P': 
-			if(player) {
-				if(i+1 < SIZE) {
-					if(j+1 < SIZE) board[i+1][j+1].danger[player] = 0;
-					if(j-1 >= 0) board[i+1][j-1].danger[player] = 0;
-				}
-			}
-			else {
-				if(i-1 >= 0) {
-					if(j+1 < SIZE) board[i-1][j+1].danger[player] = 0;
-					if(j-1 >= 0) board[i-1][j-1].danger[player] = 0;
-				}
-			}
-		break;
-		case 'S':
-			if(i+1 < SIZE) {
-				if(j+2<SIZE) board[i+1][j+2].danger[player] = 0;
-				if(j-2>=0) board[i+1][j-2].danger[player] = 0;
-			}
-			if(i-1 >= 0) {
-				if(j+2<SIZE) board[i-1][j+2].danger[player] = 0;
-				if(j-2>=0) board[i-1][j-2].danger[player] = 0;
-			}
-			if(i+2 < SIZE) {
-				if(j+1<SIZE) board[i+2][j+1].danger[player] = 0;
-				if(j-1>=0) board[i+2][j-1].danger[player] = 0;
-			}
-			if(i-2 >= 0) {
-				if(j+1<SIZE) board[i-2][j+1].danger[player] = 0;
-				if(j-1>=0) board[i-2][j-1].danger[player] = 0;
-			}
-		break;
+void update_bishop(BOARD (*board)[SIZE], int i, int j, int p) {
+	int k;
+	for(k = 1; i - k >= 0; k++) {	
+		if(j - k >= 0) {
+			board[i-k][j-k].danger[p] = 'L';
+			if(board[i-k][j-k].type != 0) break;
+		}
+		else break;
 	}
-	//puts("after free:");
-	//print_danger(board, player);
+	for(k = 1; i - k >= 0; k++) {	
+		if(j + k < SIZE) {
+			board[i-k][j+k].danger[p] = 'L';
+			if(board[i-k][j+k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j - k >= 0) {
+			board[i+k][j-k].danger[p] = 'L';
+			if(board[i+k][j-k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j + k < SIZE) {
+			board[i+k][j+k].danger[p] = 'L';
+			if(board[i+k][j+k].type != 0) break;
+		}
+		else break;
+	}
+}
+void update_rook(BOARD (*board)[SIZE], int i, int j, int p) {
+	int k;
+	for(k = 1; i - k >= 0; k++) {		
+		board[i-k][j].danger[p] = 'T';
+		if(board[i-k][j].type != 0) break;
+	}
+	for(k = 1; j - k >= 0; k++) {	
+		board[i][j-k].danger[p] = 'T';
+		if(board[i][j-k].type != 0) break;
+	}
+	for(k = 1; j + k < SIZE; k++) {	
+		board[i][j+k].danger[p] = 'T';
+		if(board[i][j+k].type != 0) break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		board[i+k][j].danger[p] = 'T';
+		if(board[i+k][j].type != 0) break;
+	}
+}
+void update_queen(BOARD (*board)[SIZE], int i, int j, int p) {
+	int k; 
+	for(k = 1; i - k >= 0; k++) {	
+		if(j - k >= 0) {
+			board[i-k][j-k].danger[p] = 'D';
+			if(board[i-k][j-k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i - k >= 0; k++) {	
+		if(j + k < SIZE) {
+			board[i-k][j+k].danger[p] = 'D';
+			if(board[i-k][j+k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j - k >= 0) {
+			board[i+k][j-k].danger[p] = 'D';
+			if(board[i+k][j-k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j + k < SIZE) {
+			board[i+k][j+k].danger[p] = 'D';
+			if(board[i+k][j+k].type != 0) break;
+		}
+		else break;
+	}
+	for(k = 1; i - k >= 0; k++) {		
+		board[i-k][j].danger[p] = 'D';
+		if(board[i-k][j].type != 0) break;
+	}
+	for(k = 1; j - k >= 0; k++) {	
+		board[i][j-k].danger[p] = 'D';
+		if(board[i][j-k].type != 0) break;
+	}
+	for(k = 1; j + k < SIZE; k++) {	
+		board[i][j+k].danger[p] = 'D';
+		if(board[i][j+k].type != 0) break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		board[i+k][j].danger[p] = 'D';
+		if(board[i+k][j].type != 0) break;
+	}
+}
+
+//remove functions
+void rm_danger(BOARD (*board)[SIZE], int piece, int i, int j) {
+	switch(board[i][j].type) {
+		case 'P': rm_pawn(board, i, j); break;
+		case 'S': rm_knight(board, i, j); break;
+		case 'K': rm_king(board, i, j); break;
+		case 'L': rm_bishop(board, i, j); break;
+		case 'T': rm_rook(board, i, j); break;
+		case 'D': rm_queen(board, i, j); break;
+	}
+}
+void rm_pawn(BOARD (*board)[SIZE], int i, int j) {
+	if(player) {
+		if(i+1 < SIZE) {
+			if(j+1 < SIZE) board[i+1][j+1].danger[player] = 0;
+			if(j-1 >= 0) board[i+1][j-1].danger[player] = 0;
+		}
+	}
+	else {
+		if(i-1 >= 0) {
+			if(j+1 < SIZE) board[i-1][j+1].danger[player] = 0;
+			if(j-1 >= 0) board[i-1][j-1].danger[player] = 0;
+		}
+	}
+}
+void rm_knight(BOARD (*board)[SIZE], int i, int j) {
+	if(i+1 < SIZE) {
+		if(j+2<SIZE) board[i+1][j+2].danger[player] = 0;
+		if(j-2>=0) board[i+1][j-2].danger[player] = 0;
+	}
+	if(i-1 >= 0) {
+		if(j+2<SIZE) board[i-1][j+2].danger[player] = 0;
+		if(j-2>=0) board[i-1][j-2].danger[player] = 0;
+	}
+	if(i+2 < SIZE) {
+		if(j+1<SIZE) board[i+2][j+1].danger[player] = 0;
+		if(j-1>=0) board[i+2][j-1].danger[player] = 0;
+	}
+	if(i-2 >= 0) {
+		if(j+1<SIZE) board[i-2][j+1].danger[player] = 0;
+		if(j-1>=0) board[i-2][j-1].danger[player] = 0;
+	}
+}
+void rm_king(BOARD (*board)[SIZE], int i, int j) {
+	if(i-1>=0) {
+		if(j-1>=0) board[i-1][j-1].danger[player] = 0;
+		if(j+1<SIZE) board[i-1][j+1].danger[player] = 0;
+		board[i-1][j].danger[player] = 0;
+	}
+	if(i+1<SIZE) {
+		if(j-1>=0) board[i+1][j-1].danger[player] = 0;
+		if(j+1<SIZE) board[i+1][j+1].danger[player] = 0;
+		board[i+1][j].danger[player] = 0;
+	}
+	if(j-1>=0) board[i][j-1].danger[player] = 0;
+	if(j+1<SIZE) board[i][j+1].danger[player] = 0;
+}
+void rm_bishop(BOARD (*board)[SIZE], int i, int j) {
+	int k;
+	for(k = 1; i - k >= 0; k++) {	
+		if(j - k >= 0) {
+			board[i-k][j-k].danger[player] = 0;
+		}
+		else break;
+	}
+	for(k = 1; i - k >= 0; k++) {	
+		if(j + k < SIZE) {
+			board[i-k][j+k].danger[player] = 0;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j - k >= 0) {
+			board[i+k][j-k].danger[player] = 0;
+		}
+		else break;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		if(j + k < SIZE) {
+			board[i+k][j+k].danger[player] = 0;
+		}
+		else break;
+	}
+}
+void rm_rook(BOARD (*board)[SIZE], int i, int j) {
+	int k;
+	for(k = 1; i - k >= 0; k++) {		
+		board[i-k][j].danger[player] = 0;
+	}
+	for(k = 1; j - k >= 0; k++) {	
+		board[i][j-k].danger[player] = 0;
+	}
+	for(k = 1; j + k < SIZE; k++) {	
+		board[i][j+k].danger[player] = 0;
+	}
+	for(k = 1; i + k < SIZE; k++) {	
+		board[i+k][j].danger[player] = 0;
+	}
+}
+void rm_queen(BOARD (*board)[SIZE], int i, int j) {
+	rm_bishop(board, i, j);
+	rm_rook(board, i, j);
 }
 void rm_piece(BOARD *piece) {
 	piece->type = 0;
