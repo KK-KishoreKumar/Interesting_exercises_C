@@ -269,3 +269,11 @@ void rm_piece(BOARD *piece) {
 	piece->player = -1;
 	piece->state = 0;
 }
+void rm_danger_all(BOARD (*board)[SIZE], int player) {
+	int i, j;
+	for(i = 0; i < SIZE; i++) {
+		for(j = 0; j < SIZE; j++) {
+			board[i][j].danger[player] = 0;
+		}
+	}
+}

@@ -29,6 +29,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 	
 	if(board[i2][j2].type == 'K') {
 		printf("\nPlayer %d has won!\n", player+1);
+		free_danger(board);
 		exit(EXIT_SUCCESS);
 	}
 	
@@ -37,7 +38,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 
 int pawn_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	int absi, absj;
-	if(board[i2][j2].player == player) {
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}
@@ -77,7 +78,7 @@ int pawn_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 
 int knight_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	int absi, absj;
-	if(board[i2][j2].player == player) {
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}
@@ -95,12 +96,12 @@ int knight_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 }
 
 int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
-	int absi, absj, k;
-	if(board[i2][j2].player == player) {
+	int absi, absj, k, enemy = (board[i1][j1].player +1)%2;
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}
-	if(board[i2][j2].danger[(player+1)%2] != 0) {
+	if(board[i2][j2].danger[enemy] != 0) {
 		if(per) printf("error: Destination '%c%c' is under attack.\n", (j2+'a'), (-i2+SIZE+'0') );
 		return 0;
 	}
@@ -110,10 +111,10 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	if (!check && i1 == i2 && absj == 2 && board[i1][j1].state == 0) {
 		if(j1 < j2) {
 			if(board[i1][SIZE-1].type == 'T' && board[i1][SIZE-1].state == 0
-				&& board[i1][SIZE-1].player == player && !board[i1][SIZE-1].danger[(player+1)%2]) {
+				&& board[i1][SIZE-1].player == board[i1][j1].player && !board[i1][SIZE-1].danger[enemy]) {
 				for(k = 1; k <= 2; k++) {
 					if(board[i1][j1+k].type != 0 
-						|| board[i1][j1+k].danger[(player+1)%2] != 0) {
+						|| board[i1][j1+k].danger[enemy] != 0) {
 						if(per) puts("error: path for castling move is blocked / under attack.");
 						return 0;
 					}
@@ -126,10 +127,10 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 		}
 		else {
 			if(board[i1][0].type == 'T' && board[i1][0].state == 0
-				&& board[i1][0].player == player && !board[i1][0].danger[(player+1)%2]) {
+				&& board[i1][0].player == board[i1][j1].player && !board[i1][0].danger[enemy]) {
 				for(k = 1; k < j1; k++) {
 					if(board[i1][j1-k].type != 0
-						|| board[i1][j1-k].danger[(player+1)%2] != 0) {
+						|| board[i1][j1-k].danger[enemy] != 0) {
 						if(per) puts("error: path for castling move is blocked / under attack.");
 						return 0;
 					}
@@ -151,7 +152,7 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 
 int bishop_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	int absi, absj, p, k;
-	if(board[i2][j2].player == player) {
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}
@@ -180,7 +181,7 @@ int bishop_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 
 int rook_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	int absi, absj, p, k;
-	if(board[i2][j2].player == player) {
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}
@@ -206,7 +207,7 @@ int rook_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 
 int queen_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	int absi, absj, p, k;
-	if(board[i2][j2].player == player) {
+	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
 	}

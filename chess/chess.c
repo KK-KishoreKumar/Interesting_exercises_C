@@ -16,7 +16,7 @@ int per = 1;	//if !0 then error msg will be print, else it will not.
 
 int main () {
 	int i = 0, j = 0, i1, i2, j1, j2, k, p;
-	int pieces[2], enemy;
+	int pieces[2], enemy = (player+1)%2;
 	pieces[0] = pieces[1] = 16;
 	BOARD board [SIZE][SIZE];
 	
@@ -26,7 +26,6 @@ int main () {
 	char buffer[MAX_BUFFER], promotion;
 	do{
 		i = 0;
-		enemy = (player+1)%2;
 		
 		//Asks for command input until valid
 		do {
@@ -50,8 +49,6 @@ int main () {
 		j1 = buffer[1] - 'a';
 		i2 = SIZE - (buffer[4] - '0');
 		j2 = buffer[3] - 'a';
-		
-		rm_danger(board, buffer[0], i1, j1);
 	
 		//[i1][j1] piece is being moved to [i2][j2] spot
 		if(board[i2][j2].player == enemy ) 
@@ -74,8 +71,8 @@ int main () {
 		
 		print_matrix(board);
 		
-		promotion = 0;
 		if(board[i2][j2].type == 'P' && (player == 0 ? i2 == 0 : i2 == SIZE - 1)) {
+			promotion = 0;
 			printf("Promotion!\n");
 			do {
 				printf("With what piece (D/S/L/T) do you wish to exchange pawn at '%c%c': ", buffer[3], buffer[4]);
@@ -85,34 +82,41 @@ int main () {
 			print_matrix(board);
 		}
 		
+		rm_danger_all(board, player);
 		update_danger(board);
+			
+		player = enemy;
+		enemy = (player+1)%2;
 		
 		//Checks if king is attacked. If it is then it is either checkmate or check.
 		for(i = 0; i < SIZE; i++) {
 			for(j = 0; j < SIZE; j++) {
-				if(board[i][j].type == 'K' && board[i][j].player != player  && board[i][j].danger[player]) {
+				if(board[i][j].type == 'K' && board[i][j].player == player  && board[i][j].danger[enemy]) {
 					if(checkmate(board, i, j)) {
-						printf("Checkmate!\nPlayer %d has won!\n", player+1);
-						exit(EXIT_SUCCESS);
+						puts("Checkmate!");
+						winner = player == 0 ? 2 : 1;
 					}
-					printf("Check!\nKing is under attack!\n");
-					check = 1;
+					else {
+						printf("Check!\nKing is under attack!\n");
+						check = 1;
+					}
 					goto CONT;
 				}
 			}
 		}
 		
-		//Checks if it is stalemate if king isn't attacked.
-		if(pieces[enemy] == 1 && !can_kmov(board, i, j, enemy)) {
+		//Checks if it is stalemate if king isn't attacked. (bad version, needs upgrade :P)
+		if(pieces[player] == 1 && !can_kmov(board, i, j, player)) {
 			puts("Stalemate!\nIt's a draw!");
+			free_danger(board);
 			return EXIT_SUCCESS;
 		}
-		
-	CONT:;
-		player = enemy;
+CONT:;	
 	}while(!winner);
 	
 	printf("\nPlayer %d won!\n", winner);
+	
+	free_danger(board);
 	
 	return EXIT_SUCCESS;
 }
