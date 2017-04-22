@@ -11,16 +11,20 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 	for(i = 0; i < SIZE; i++) {
 		for(j = 0; j < SIZE; j++) {
 			b2[i][j].danger = (int *) malloc(2*sizeof(int));
+			b2[i][j].type = board[i][j].type;
+			b2[i][j].player = board[i][j].player;
+			b2[i][j].state = board[i][j].state;
+			b2[i][j].danger[0] = board[i][j].danger[0];
+			b2[i][j].danger[1] = board[i][j].danger[1];
 		}
 	}
-	boardcpy(b2, board);
 	
 	find_attacker(b2, &atk_i, &atk_j, king_i, king_j);
 	b2[atk_i][atk_j].state = 2;
 	update_state(b2, atk_i, atk_j, king_i, king_j);
 	
 	int k, p;
-	//WARNING: Code below is super slow :/ (and is gonna be even slower, once i upgrade it :D)
+	//WARNING: Code below is super slow (facepalm may be imminent). 
 	for(i = 0; i < SIZE; i++) {
 		for(j = 0; j < SIZE; j++) {
 			if(b2[i][j].player != b2[king_i][king_j].player) continue;
@@ -28,12 +32,24 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 				for(p = 0; p < SIZE; p++) {
 					if(b2[k][p].state == 2) {
 						switch(b2[i][j].type) {
-							case 'P': 	if(pawn_check(b2, i, j, k, p)) goto LEAVE; break; 
-							case 'S':	if(knight_check(b2, i, j, k, p))goto LEAVE; break;	
-							case 'K':	if(king_check(b2, i, j, k, p)) goto LEAVE; break;	
-							case 'L':	if(bishop_check(b2, i, j, k, p)) goto LEAVE; break;
-							case 'T':	if(rook_check(b2, i, j, k, p)) goto LEAVE; break;
-							case 'D':	if(queen_check(b2, i, j, k, p)) goto LEAVE; break;
+							case 'P': 	if(pawn_check(b2, i, j, k, p)) 
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
+							case 'S':	if(knight_check(b2, i, j, k, p))
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
+							case 'K':	if(king_check(b2, i, j, k, p)) 
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
+							case 'L':	if(bishop_check(b2, i, j, k, p)) 
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
+							case 'T':	if(rook_check(b2, i, j, k, p)) 
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
+							case 'D':	if(queen_check(b2, i, j, k, p)) 
+												if(!is_still_mate(b2, i, j, k, p)) goto LEAVE; 
+								break; 
 						}
 					}
 				}		
@@ -45,6 +61,35 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 LEAVE:;
 	board_free(b2);
 	return 0;
+}
+int is_still_mate(BOARD (*board)[SIZE], int i1, int j1, int i2 , int j2) {
+	int ret_val = 0, i, j;
+	BOARD (*b2)[SIZE] = malloc(sizeof(BOARD [SIZE][SIZE]));
+	if(b2 == NULL) exit(EXIT_FAILURE);
+	for(i = 0; i < SIZE; i++) {
+		for(j = 0; j < SIZE; j++) {
+			b2[i][j].danger = (int *) calloc(2,sizeof(int));
+			b2[i][j].state = board[i][j].state;
+			b2[i][j].type = board[i][j].type;
+			b2[i][j].player = board[i][j].player;
+		}
+	}
+	b2[i2][j2].type = b2[i1][j1].type;
+	b2[i2][j2].state = 1;
+	b2[i2][j2].player = b2[i1][j1].player;
+	rm_piece(&b2[i1][j1]);
+	update_danger(b2);
+	for(i = 0; i < SIZE; i++) {
+		for(j = 0; j < SIZE; j++) {
+			if(b2[i][j].type == 'K' && b2[i][j].player == player) {
+				ret_val = b2[i][j].danger[(player+1)%2] == 1 ? 1 : 0;
+				goto RET;
+			}
+		}
+	}
+RET:;
+	board_free(b2);
+	return ret_val;
 }
 void update_state(BOARD (*b2)[SIZE], int i, int j, int king_i, int king_j) {
 	switch(b2[i][j].type) {
@@ -92,41 +137,29 @@ void us_bishop(BOARD (*board)[SIZE], int i, int j, int king_i, int king_j) {
 	if(!subi || !subj) return;
 	if(subi > 0) {
 		if(subj > 0) {
-			for(k = 1; i - k >= 0; k++) {	
-				if(j - k >= 0) {
+			for(k = 1; i - k >= 0 && j - k >= 0; k++) {	
 					board[i-k][j-k].state = 2;
 					if(board[i-k][j-k].type != 0) break;
-				}
-				else break;
 			}
 		}
 		else {
-			for(k = 1; i - k >= 0; k++) {	
-				if(j + k < SIZE) {
+			for(k = 1; i - k >= 0 && j + k < SIZE; k++) {	
 					board[i-k][j+k].state = 2;
 					if(board[i-k][j+k].type != 0) break;
-				}
-				else break;
 			}
 		}
 	}
 	else{
 		if(subj > 0) {
-			for(k = 1; i + k < SIZE; k++) {	
-				if(j - k >= 0) {
+			for(k = 1; i + k < SIZE && j - k >= 0; k++) {	
 					board[i+k][j-k].state = 2;
 					if(board[i+k][j-k].type != 0) break;
-				}
-				else break;
 			}
 		}
 		else {
-			for(k = 1; i + k < SIZE; k++) {	
-				if(j + k < SIZE) {
+			for(k = 1; i + k < SIZE && j + k < SIZE; k++) {	
 					board[i+k][j+k].state = 2;
 					if(board[i+k][j+k].type != 0) break;
-				}
-				else break;
 			}
 		}
 	}

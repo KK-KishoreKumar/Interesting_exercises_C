@@ -5,8 +5,8 @@
 #include <string.h>
 #define SIZE 8
 #define MAX_BUFFER 7
-#define RED "\x1b[33;3;1m"
-#define BLUE  "\x1b[37;3;1m"
+#define RED "\x1b[33;1m"
+#define BLUE  "\x1b[37;1m"
 #define BG_WHITE "\x1b[40m"
 #define BG_YELLOW "\x1b[41m"
 #define CL_RESET  "\x1b[0m"
@@ -70,10 +70,11 @@ void update_bishop(BOARD (*)[SIZE], int, int, int);
 void update_rook(BOARD (*)[SIZE], int, int, int);
 void update_queen(BOARD (*)[SIZE], int, int, int);
 
-//checkmate/stalemate functions
+//checkmate functions
 int checkmate(BOARD (*)[SIZE], int, int);
 int can_kmov(BOARD (*)[SIZE], int, int, int);
 void find_attacker(BOARD (*)[SIZE], int *, int *, int, int);
 void update_state(BOARD (*)[SIZE], int, int, int, int);
 void us_bishop(BOARD (*)[SIZE], int, int, int, int);
 void us_rook(BOARD (*)[SIZE], int, int, int, int);
+int is_still_mate(BOARD (*)[SIZE], int, int, int, int);
