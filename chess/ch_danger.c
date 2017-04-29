@@ -3,8 +3,8 @@
 //update functions
 void update_danger(BOARD (*board)[SIZE]) {
 	int i, j, p;
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			p = board[i][j].player;
 			switch(board[i][j].type) {
 				case 'P': update_pawn(board, i, j, p); break;
@@ -273,7 +273,7 @@ void rm_danger_all(BOARD (*board)[SIZE], int p) {
 	int i, j;
 	for(i = 0; i < SIZE; i++) {
 		for(j = 0; j < SIZE; j++) {
-			board[i][j].danger[p] = 0;
+			board[i][j].danger[p] ^= board[i][j].danger[p];
 		}
 	}
 }

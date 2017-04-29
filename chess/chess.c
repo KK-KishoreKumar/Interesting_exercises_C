@@ -16,7 +16,7 @@ int per = 1;	//if !0 then error msg will be print, else it will not.
 
 int main () {
 	int i = 0, j = 0, i1, i2, j1, j2, k, p;
-	int pieces[2], enemy = (player+1)%2;
+	int pieces[2], enemy = player^1;
 	pieces[0] = pieces[1] = 16;
 	BOARD board [SIZE][SIZE];
 	
@@ -25,7 +25,7 @@ int main () {
 	usage_tip();
 	char buffer[MAX_BUFFER], promotion;
 	do{
-		i = 0;
+		i ^= i;
 		
 		//Asks for command input until valid
 		do {
@@ -66,13 +66,13 @@ int main () {
 			board[i2][k].player = board[i2][p].player;
 			board[i2][k].state = 1;
 			rm_piece(&board[i2][p]);
-			castling = 0;
+			castling ^= castling;
 		}
 		
 		print_matrix(board);
 		
 		if(board[i2][j2].type == 'P' && (player == 0 ? i2 == 0 : i2 == SIZE - 1)) {
-			promotion = 0;
+			promotion ^= promotion;
 			printf("Promotion!\n");
 			do {
 				printf("With what piece (D/S/L/T) do you wish to exchange pawn at '%c%c': ", buffer[3], buffer[4]);
@@ -86,11 +86,11 @@ int main () {
 		update_danger(board);
 			
 		player = enemy;
-		enemy = (player+1)%2;
+		enemy = player^1;
 		
 		//Checks if king is attacked. If it is then it is either checkmate or check.
-		for(i = 0; i < SIZE; i++) {
-			for(j = 0; j < SIZE; j++) {
+		for(i ^= i; i < SIZE; i++) {
+			for(j ^= j; j < SIZE; j++) {
 				if(board[i][j].type == 'K' && board[i][j].player == player  && board[i][j].danger[enemy]) {
 					if(checkmate(board, i, j)) {
 						puts("Checkmate!");

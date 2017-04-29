@@ -8,8 +8,8 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 	//Creates copy of the current matrix
 	BOARD (*b2)[SIZE] = malloc(sizeof(BOARD [SIZE][SIZE]));
 	if(b2 == NULL) exit(EXIT_FAILURE);
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			b2[i][j].danger = (int *) malloc(2*sizeof(int));
 			b2[i][j].type = board[i][j].type;
 			b2[i][j].player = board[i][j].player;
@@ -25,11 +25,11 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 	
 	int k, p;
 	//WARNING: Code below is super slow (facepalm may be imminent). 
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			if(b2[i][j].player != b2[king_i][king_j].player) continue;
-			for(k = 0; k < SIZE; k++) {
-				for(p = 0; p < SIZE; p++) {
+			for(k ^= k; k < SIZE; k++) {
+				for(p ^= p; p < SIZE; p++) {
 					if(b2[k][p].state == 2) {
 						switch(b2[i][j].type) {
 							case 'P': 	if(pawn_check(b2, i, j, k, p)) 
@@ -63,11 +63,11 @@ LEAVE:;
 	return 0;
 }
 int is_still_mate(BOARD (*board)[SIZE], int i1, int j1, int i2 , int j2) {
-	int ret_val = 0, i, j;
+	int i, j;
 	BOARD (*b2)[SIZE] = malloc(sizeof(BOARD [SIZE][SIZE]));
 	if(b2 == NULL) exit(EXIT_FAILURE);
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			b2[i][j].danger = (int *) calloc(2,sizeof(int));
 			b2[i][j].state = board[i][j].state;
 			b2[i][j].type = board[i][j].type;
@@ -79,17 +79,15 @@ int is_still_mate(BOARD (*board)[SIZE], int i1, int j1, int i2 , int j2) {
 	b2[i2][j2].player = b2[i1][j1].player;
 	rm_piece(&b2[i1][j1]);
 	update_danger(b2);
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			if(b2[i][j].type == 'K' && b2[i][j].player == player) {
-				ret_val = b2[i][j].danger[(player+1)%2] == 1 ? 1 : 0;
-				goto RET;
+				board_free(b2);
+				return b2[i][j].danger[player^1];
 			}
 		}
 	}
-RET:;
-	board_free(b2);
-	return ret_val;
+	return 0;
 }
 void update_state(BOARD (*b2)[SIZE], int i, int j, int king_i, int king_j) {
 	switch(b2[i][j].type) {
@@ -165,7 +163,7 @@ void us_bishop(BOARD (*board)[SIZE], int i, int j, int king_i, int king_j) {
 	}
 }
 void find_attacker(BOARD (*board)[SIZE], int *atk_i, int *atk_j, int king_i, int king_j) {
-	per = 0;
+	per ^= per;
 	for(*atk_i = 0; *atk_i < SIZE; (*atk_i)++) {
 		for(*atk_j = 0; *atk_j < SIZE; (*atk_j)++) {
 			switch(board[*atk_i][*atk_j].type) {
@@ -182,7 +180,7 @@ void find_attacker(BOARD (*board)[SIZE], int *atk_i, int *atk_j, int king_i, int
 
 //p1  is player whose king is attacked
 int can_kmov(BOARD (*board)[SIZE], int i, int j, int p1) {
-	int p2 = (p1+1)%2;	// the one attacking the king
+	int p2 = p1^1;	// the one attacking the king
 	if(i-1>=0) {
 		if(j-1>=0) 
 			if(board[i-1][j-1].player != p1 && board[i-1][j-1].danger[p2] == 0) 
