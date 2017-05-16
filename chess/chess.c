@@ -91,26 +91,27 @@ int main () {
 		//Checks if king is attacked. If it is then it is either checkmate or check.
 		for(i ^= i; i < SIZE; i++) {
 			for(j ^= j; j < SIZE; j++) {
-				if(board[i][j].type == 'K' && board[i][j].player == player  && board[i][j].danger[enemy]) {
-					if(checkmate(board, i, j)) {
-						puts("Checkmate!");
-						winner = player == 0 ? 2 : 1;
-					}
-					else {
-						printf("Check!\nKing is under attack!\n");
-						check = 1;
+				if(board[i][j].type == 'K' && board[i][j].player == player) {
+					if(board[i][j].danger[enemy]) {
+						if(checkmate(board, i, j)) {
+							puts("Checkmate!");
+							winner = player == 0 ? 2 : 1;
+						}
+						else {
+							printf("Check!\nKing is under attack!\n");
+							check = 1;
+						}
+					}	//Checks if it is stalemate if king isn't attacked. (bad version, needs upgrade :P)
+					else	if(stalemate(board)) {
+								puts("Stalemate!\nIt's a draw!");
+								free_danger(board);
+								return EXIT_SUCCESS;
 					}
 					goto CONT;
 				}
 			}
 		}
 		
-		//Checks if it is stalemate if king isn't attacked. (bad version, needs upgrade :P)
-		if(pieces[player] == 1 && !can_kmov(board, i, j, player)) {
-			puts("Stalemate!\nIt's a draw!");
-			free_danger(board);
-			return EXIT_SUCCESS;
-		}
 CONT:;	
 	}while(!winner);
 	

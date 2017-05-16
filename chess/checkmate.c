@@ -3,6 +3,7 @@
 int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 	int atk_i, atk_j;
 	int i, j;
+	
 	if(can_kmov(board, king_i, king_j, board[king_i][king_j].player)) return 0;
 	
 	//Creates copy of the current matrix
@@ -24,10 +25,11 @@ int checkmate(BOARD (*board)[SIZE], int king_i, int king_j) {
 	update_state(b2, atk_i, atk_j, king_i, king_j);
 	
 	int k, p;
+	int k_player = b2[king_i][king_j].player;
 	//WARNING: Code below is super slow (facepalm may be imminent). 
 	for(i ^= i; i < SIZE; i++) {
 		for(j ^= j; j < SIZE; j++) {
-			if(b2[i][j].player != b2[king_i][king_j].player) continue;
+			if(b2[i][j].player != k_player) continue;
 			for(k ^= k; k < SIZE; k++) {
 				for(p ^= p; p < SIZE; p++) {
 					if(b2[k][p].state == 2) {
@@ -82,12 +84,19 @@ int is_still_mate(BOARD (*board)[SIZE], int i1, int j1, int i2 , int j2) {
 	for(i ^= i; i < SIZE; i++) {
 		for(j ^= j; j < SIZE; j++) {
 			if(b2[i][j].type == 'K' && b2[i][j].player == player) {
-				board_free(b2);
-				return b2[i][j].danger[player^1];
+				if(b2[i][j].danger[player^1]) {
+					board_free(b2);
+					return 1;
+				}
+				else {
+					board_free(b2);
+					return 0;
+				}
 			}
 		}
 	}
-	return 0;
+	board_free(b2);	// this is only gonna be done if no king is present
+	return 0;			// which shouldn't happen ever, but just in case of error i wrote it anyway
 }
 void update_state(BOARD (*b2)[SIZE], int i, int j, int king_i, int king_j) {
 	switch(b2[i][j].type) {
@@ -106,25 +115,25 @@ void us_rook(BOARD(*board)[SIZE], int i, int j, int king_i, int king_j) {
 	if(subi > 0)  {		
 		for(k = 1; i - k >= 0; k++) {		
 			board[i-k][j].state = 2;
-			if(board[i-k][j].type != 0) break;
+			if(board[i-k][j].type) break;
 		}
 	}
 	else if(subi < 0) {
 		for(k = 1; i + k < SIZE; k++) {	
 			board[i+k][j].state = 2;
-			if(board[i+k][j].type != 0) break;
+			if(board[i+k][j].type) break;
 		}
 	}
 	else if(subj > 0) {
 		for(k = 1; j - k >= 0; k++) {	
 			board[i][j-k].state = 2;
-			if(board[i][j-k].type != 0) break;
+			if(board[i][j-k].type) break;
 		}
 	}
 	else if(subj < 0) {
 		for(k = 1; j + k < SIZE; k++) {	
 			board[i][j+k].state = 2;
-			if(board[i][j+k].type != 0) break;
+			if(board[i][j+k].type) break;
 		}
 	}	
 }
@@ -137,13 +146,13 @@ void us_bishop(BOARD (*board)[SIZE], int i, int j, int king_i, int king_j) {
 		if(subj > 0) {
 			for(k = 1; i - k >= 0 && j - k >= 0; k++) {	
 					board[i-k][j-k].state = 2;
-					if(board[i-k][j-k].type != 0) break;
+					if(board[i-k][j-k].type) break;
 			}
 		}
 		else {
 			for(k = 1; i - k >= 0 && j + k < SIZE; k++) {	
 					board[i-k][j+k].state = 2;
-					if(board[i-k][j+k].type != 0) break;
+					if(board[i-k][j+k].type) break;
 			}
 		}
 	}
@@ -151,13 +160,13 @@ void us_bishop(BOARD (*board)[SIZE], int i, int j, int king_i, int king_j) {
 		if(subj > 0) {
 			for(k = 1; i + k < SIZE && j - k >= 0; k++) {	
 					board[i+k][j-k].state = 2;
-					if(board[i+k][j-k].type != 0) break;
+					if(board[i+k][j-k].type) break;
 			}
 		}
 		else {
 			for(k = 1; i + k < SIZE && j + k < SIZE; k++) {	
 					board[i+k][j+k].state = 2;
-					if(board[i+k][j+k].type != 0) break;
+					if(board[i+k][j+k].type) break;
 			}
 		}
 	}

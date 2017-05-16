@@ -1,7 +1,7 @@
 #include "chess.h"
 int command_check(BOARD (*board)[SIZE], char *s) {
 	int i1, j1, i2, j2, piece;
-	castling = 0;
+	castling ^= castling;
 	piece = *s++;
 	j1 = *s++ - 'a';
 	i1 = SIZE - (*s++ - '0');
@@ -9,7 +9,7 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 	i2 = SIZE - (*s++ - '0');
 	
 	if(board[i1][j1].player != player) {
-		puts("error: you are trying to move an empty/enemy piece.");
+	    puts("error: you are trying to move an empty/enemy piece.");
 		return 0;
 	}
 	if(board[i1][j1].type != piece) {
@@ -17,7 +17,8 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 				, piece, board[i1][j1].type, (j1+'a'), (-i1+SIZE+'0'));
 		return 0;
 	}
-	per = 1;
+	per ^= per;
+	per++;
 	switch(piece) {
 		case 'P': 	if(!pawn_check(board, i1, j1, i2, j2)) return 0; break;
 		case 'S':	if(!knight_check(board, i1, j1, i2, j2)) return 0; break;	
@@ -31,6 +32,11 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 		printf("\nPlayer %d has won!\n", player+1);
 		free_danger(board);
 		exit(EXIT_SUCCESS);
+	}
+	
+	if(is_still_mate(board, i1, j1, i2, j2)) {
+		puts("error: move unavailable.");	// this is in case if it's still check, or if it is going to be checkmate after the move
+		return 0;
 	}
 	
 	return 1;
@@ -49,7 +55,7 @@ int pawn_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 			if(per) printf("error: pawn can only move vertical. (diagonally is exeption for eating enemy piece).\n");
 			return 0;
 		}
-		else if(board[i2][j2].type == 0) {
+		else if(!board[i2][j2].type) {
 			if(per) puts("error: pawn can move diagonally only to eat enemys piece.");
 			return 0;
 		}
@@ -62,13 +68,13 @@ int pawn_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 		if(per) puts("error: pawn can move 2 steps forward if first move, and 1 step if not.");
 		return 0;
 	}
-	if(board[i1][j1].state == 0 && absi == 2) {
-		if(i1 > i2 ? board[i1-1][j1].type != 0 : board[i1+1][j1].type != 0) {
+	if(!board[i1][j1].state && absi == 2) {
+		if(i1 > i2 ? board[i1-1][j1].type  : board[i1+1][j1].type ) {
 			if(per) puts("error: another piece is blocking the path.");
 			return 0;
 		}
 	}
-	if(j1 == j2 && board[i2][j2].type != 0) {
+	if(j1 == j2 && board[i2][j2].type) {
 		if(per) puts("error: another piece is blocking the path.");
 		return 0;
 	}
@@ -96,7 +102,7 @@ int knight_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 }
 
 int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
-	int absi, absj, k, enemy = (board[i1][j1].player +1)%2;
+	int absi, absj, k, enemy = board[i1][j1].player^1;
 	if(board[i2][j2].player == board[i1][j1].player) {
 		if(per) puts("error: friendly piece is blocking the path.");
 		return 0;
@@ -108,13 +114,12 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	absi = abs(i1 - i2);
 	absj = abs(j1 - j2);
 	//Checks if castling move first
-	if (!check && i1 == i2 && absj == 2 && board[i1][j1].state == 0) {
+	if (!check && i1 == i2 && absj == 2 && !board[i1][j1].state) {
 		if(j1 < j2) {
-			if(board[i1][SIZE-1].type == 'T' && board[i1][SIZE-1].state == 0
+			if(board[i1][SIZE-1].type == 'T' && !board[i1][SIZE-1].state 
 				&& board[i1][SIZE-1].player == board[i1][j1].player && !board[i1][SIZE-1].danger[enemy]) {
 				for(k = 1; k <= 2; k++) {
-					if(board[i1][j1+k].type != 0 
-						|| board[i1][j1+k].danger[enemy] != 0) {
+					if(board[i1][j1+k].type || board[i1][j1+k].danger[enemy]) {
 						if(per) puts("error: path for castling move is blocked / under attack.");
 						return 0;
 					}
@@ -126,11 +131,10 @@ int king_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 			}
 		}
 		else {
-			if(board[i1][0].type == 'T' && board[i1][0].state == 0
+			if(board[i1][0].type == 'T' && !board[i1][0].state
 				&& board[i1][0].player == board[i1][j1].player && !board[i1][0].danger[enemy]) {
 				for(k = 1; k < j1; k++) {
-					if(board[i1][j1-k].type != 0
-						|| board[i1][j1-k].danger[enemy] != 0) {
+					if(board[i1][j1-k].type	|| board[i1][j1-k].danger[enemy]) {
 						if(per) puts("error: path for castling move is blocked / under attack.");
 						return 0;
 					}
@@ -165,12 +169,12 @@ int bishop_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	/*checks if there is an obsticle in diagonal path*/
 	for(k = 1, p = absi; k < p; k++) {
 			if(i1 > i2) {
-				if(j1 < j2 ? board[i1 - k][j1+k].type != 0 : board[i1 - k][j1-k].type != 0) {
+				if(j1 < j2 ? board[i1 - k][j1+k].type : board[i1 - k][j1-k].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 				}
 			}
-			else if(j1 < j2 ? board[i1 + k][j1+k].type != 0 : board[i1 + k][j1-k].type != 0) {
+			else if(j1 < j2 ? board[i1 + k][j1+k].type : board[i1 + k][j1-k].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 			}
@@ -193,12 +197,12 @@ int rook_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	}
 	for(k = 1, p = (i1 == i2) ? absj : absi; k < p; k++) 
 		if(i1 == i2) {
-			if(j1 > j2 ? board[i1][j1-k].type != 0 : board[i1][j1+k].type != 0) {
+			if(j1 > j2 ? board[i1][j1-k].type : board[i1][j1+k].type) {
 				if(per) puts("error: another piece is blocking the path.");
 				return 0;
 			}
 		}
-		else if(i1 > i2 ? board[i1-k][j1].type != 0 : board[i1+k][j1].type != 0) {
+		else if(i1 > i2 ? board[i1-k][j1].type : board[i1+k][j1].type) {
 				if(per) puts("error: another piece is blocking the path.");
 				return 0;
 		}
@@ -216,12 +220,12 @@ int queen_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	if(absi == absj) {
 		for(k = 1, p = absi; k < p; k++) 
 			if(i1 > i2) {
-				if(j1 < j2 ? board[i1 - k][j1+k].type != 0 : board[i1 - k][j1-k].type != 0) {
+				if(j1 < j2 ? board[i1 - k][j1+k].type : board[i1 - k][j1-k].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 				}
 			}
-			else if(j1 < j2 ? board[i1 + k][j1+k].type != 0 : board[i1 + k][j1-k].type != 0) {
+			else if(j1 < j2 ? board[i1 + k][j1+k].type : board[i1 + k][j1-k].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 			}
@@ -229,12 +233,12 @@ int queen_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 	else if((i1==i2)^(j1==j2)) {
 		for(k = 1, p = (i1 == i2) ? absj : absi; k < p; k++) 
 			if(i1 == i2) {
-				if(j1 > j2 ? board[i1][j1-k].type != 0 : board[i1][j1+k].type != 0) {
+				if(j1 > j2 ? board[i1][j1-k].type : board[i1][j1+k].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 				}
 			}
-			else if(i1 > i2 ? board[i1-k][j1].type != 0 : board[i1+k][j1].type != 0) {
+			else if(i1 > i2 ? board[i1-k][j1].type : board[i1+k][j1].type) {
 					if(per) puts("error: another piece is blocking the path.");
 					return 0;
 			}

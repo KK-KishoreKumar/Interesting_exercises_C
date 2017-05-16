@@ -78,3 +78,10 @@ void update_state(BOARD (*)[SIZE], int, int, int, int);
 void us_bishop(BOARD (*)[SIZE], int, int, int, int);
 void us_rook(BOARD (*)[SIZE], int, int, int, int);
 int is_still_mate(BOARD (*)[SIZE], int, int, int, int);
+
+//stalemate
+int stalemate(BOARD (*)[SIZE]);
+int can_pmov(BOARD (*)[SIZE], int, int, int);
+int can_smov(BOARD (*)[SIZE], int, int, int);
+int can_bmov(BOARD (*)[SIZE], int, int, int);
+int can_rmov(BOARD (*)[SIZE], int, int, int);

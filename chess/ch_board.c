@@ -1,8 +1,8 @@
 #include "chess.h"
 void boardcpy(BOARD (*b1)[SIZE], BOARD (*b2)[SIZE]) {
 	int i, j;
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			b1[i][j].type = b2[i][j].type;
 			b1[i][j].player = b2[i][j].player;
 			b1[i][j].state = b2[i][j].state;
@@ -17,8 +17,8 @@ void board_free(BOARD (*b1)[SIZE]) {
 }
 void free_danger(BOARD (*b1)[SIZE]) {
 	int i, j;
-	for(i = 0; i < SIZE; i++) {
-		for(j = 0; j < SIZE; j++) {
+	for(i ^= i; i < SIZE; i++) {
+		for(j ^= j; j < SIZE; j++) {
 			free(b1[i][j].danger);
 		}
 	}
@@ -26,12 +26,12 @@ void free_danger(BOARD (*b1)[SIZE]) {
 void init_board(BOARD (*board)[SIZE]) {
 	int i, j;
 
-	for(i = 0; i < SIZE; i++) {
+	for(i ^= i; i < SIZE; i++) {
 		board[0][i].player = board[1][i].player = 1;
 		board[1][i].type = board[6][i].type = 'P';
 		board[6][i].player = board[7][i].player = 0;	
 		
-		for(j = 0; j < SIZE; j++) {
+		for(j ^= j; j < SIZE; j++) {
 			board[i][j].state = 0;
 			board[i][j].danger = (int *) calloc(2, sizeof(int));
 		}
@@ -43,44 +43,44 @@ void init_board(BOARD (*board)[SIZE]) {
 	board[0][4].type = board[7][4].type = 'K' ;
 	
 	for(i = 2; i < SIZE - 2; i++) {
-		for(j = 0; j < SIZE; j++) {
+		for(j ^= j; j < SIZE; j++) {
 			board[i][j].type = 0;
 			board[i][j].player = -1;
 		}
 	}
+	
 }
 void print_matrix(BOARD (*board)[SIZE]) {
 	//printf("\33[2J");  				// cls (version 1)
 	system("tput reset");			// cls ((better) version 2) - resets terminal also
 	int i, j, k = 0;
 	printf("\n\t    ");
-	for(i = 0; i < SIZE; printf("%c ", 'a' + i++));
+	for(i ^= i; i < SIZE; printf("%c ", 'a' + i++));
 		
 	printf("\n\t    ");
-	for(i = 0; i < SIZE; i++) 
+	for(i ^= i; i < SIZE; i++) 
 		printf("--");
 	
 	putchar('\n');
-	for(i = 0; i < SIZE; i++) {
+	for(i ^= i; i < SIZE; i++) {
 		printf(CL_RESET "\t%d | ", SIZE - i);
-		for(j = 0; j < SIZE; j++) {
+		for(j ^= j; j < SIZE; j++) {
 			switch(board[i][j].type) {
-				case 0 : printf(k%2 == 1 ? BG_YELLOW  "  " : BG_WHITE  "  "); break;
+				case 0 : printf((k&1) == 1 ? BG_YELLOW  "  " : BG_WHITE  "  "); break;
 				case 'K' : case 'L' : case 'S' : case 'D' : case 'T' : case 'P':
-					printf(k%2 == 1 ? BG_YELLOW : BG_WHITE);
-					printf(board[i][j].player == 1 ? RED "%c " CL_RESET 
-														: BLUE  "%c " CL_RESET , board[i][j].type); break;
+					printf((k&1) == 1 ? BG_YELLOW : BG_WHITE);
+					printf(board[i][j].player == 1 ? RED "%c " CL_RESET : BLUE  "%c " CL_RESET , board[i][j].type); break;
 			}
-			k = (k+1)%2;
+			k ^= 1;
 		}
-		k = (k+1)%2;
+		k ^= 1;
 		printf(CL_RESET "| %d\n", SIZE - i);
 	}
 	printf("\t    ");
-	for(i = 0; i < SIZE; i++) 
+	for(i ^= i; i < SIZE; i++) 
 		printf("--");
 	printf("\n\t    ");
-	for(i = 0; i < SIZE; printf("%c ", 'a' + i++));
+	for(i ^= i; i < SIZE; printf("%c ", 'a' + i++));
 	puts("\n");
 }
 
