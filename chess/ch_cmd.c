@@ -56,8 +56,14 @@ int pawn_check(BOARD (*board)[SIZE], int i1, int j1, int i2, int j2) {
 			return 0;
 		}
 		else if(!board[i2][j2].type) {
-			if(per) puts("error: pawn can move diagonally only to eat enemys piece.");
-			return 0;
+			if(!board[i2][j2].state) {
+				if(per) puts("error: pawn can move diagonally only to eat enemys piece.");
+				return 0;
+			}
+			else if(board[i2 == 5 ? 4 : 3][j2].player == player) {		//en passant test
+					if(per) puts("error: you can only do en passant vs enemy piece.");
+					return 0;
+			}
 		}
 	}
 	if((player == 0) ? i1 < i2 : i1 > i2) {

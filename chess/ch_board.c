@@ -48,7 +48,7 @@ void init_board(BOARD (*board)[SIZE]) {
 			board[i][j].player = -1;
 		}
 	}
-	
+
 }
 void print_matrix(BOARD (*board)[SIZE]) {
 	//printf("\33[2J");  				// cls (version 1)

@@ -15,7 +15,9 @@ int castling = 0;
 int per = 1;	//if !0 then error msg will be print, else it will not.
 
 int main () {
+	int en_passant = 0;
 	int i = 0, j = 0, i1, i2, j1, j2, k, p;
+	int epi = 0, epj = 0;
 	int pieces[2], enemy = player^1;
 	pieces[0] = pieces[1] = 16;
 	BOARD board [SIZE][SIZE];
@@ -49,7 +51,22 @@ int main () {
 		j1 = buffer[1] - 'a';
 		i2 = SIZE - (buffer[4] - '0');
 		j2 = buffer[3] - 'a';
-	
+		
+		if(en_passant) {
+			en_passant = 0;
+			if(board[i1][j1].type == 'P'  && i2 == epi && j2 == epj) {
+				rm_piece(&board[i2 == 5 ? 4 : 3][j2]);
+			}
+			else if(!board[epi][epj].type) board[epi][epj].state = 0;
+		}
+		
+		if(board[i1][j1].type == 'P' && abs(i1-i2) == 2) {
+			epi = i1-i2 == 2 ? i1-1 : i1+1;
+			epj = j1;
+			board[epi][epj].state = 1;					// i would set player, but i am afraid i'm going to allow some function to do
+			en_passant = 1;								// something it shouldnt be able to. Overall changing state only is much safer.
+		}
+		
 		//[i1][j1] piece is being moved to [i2][j2] spot
 		if(board[i2][j2].player == enemy ) 
 			pieces[enemy]--;
