@@ -6,8 +6,9 @@
  S - skakac/konj (knight), 
  P - pesak (pawn)
  Autor: Danilo Novakovic */
- 
+#include "list.h"
 #include "chess.h"
+#include "redo_undo.h"
 int winner = 0;
 int player = 0;
 int check = 0;
@@ -17,6 +18,7 @@ int per = 1;	//if !0 then error msg will be print, else it will not.
 int main () {
 	int en_passant = 0;
 	int i = 0, j = 0, i1, i2, j1, j2, k, p;
+	int un_re = 0;
 	int epi = 0, epj = 0;
 	int pieces[2], enemy = player^1;
 	pieces[0] = pieces[1] = 16;
@@ -26,6 +28,10 @@ int main () {
 	print_matrix(board);
 	usage_tip();
 	char buffer[MAX_BUFFER], promotion;
+	
+	MOVE new_move;
+	NODE *pcurr = NULL;
+	
 	do{
 		i ^= i;
 		
@@ -33,11 +39,29 @@ int main () {
 		do {
 			printf(player == 0 ? BLUE "Player 1: " CL_RESET : RED  "Player 2: "  CL_RESET);
 			fgets(buffer, MAX_BUFFER, stdin);
-			if(!strncmp(buffer, "/end", 4)) 
-				exit(EXIT_SUCCESS);
-			if(!strncmp(buffer, "/ff", 3)) {
-				printf("\nPlayer %d won!\n", player == 0 ? 2 : 1);
-				exit(EXIT_SUCCESS);
+			if(buffer[0] == '/') {
+				if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5)) 
+					exit(EXIT_SUCCESS);
+				if(!strncmp(buffer, "/ff", 3)) {
+					printf("\nPlayer %d won!\n", player == 0 ? 2 : 1);
+					exit(EXIT_SUCCESS);
+				}
+				if(!strncmp(buffer, "/undo", 5)) {
+					if(undo(board, &pcurr)) puts("error: undo unavailable.");
+					else {
+						print_matrix(board);
+						un_re = 1;
+					}
+					continue;
+				}
+				if(!strncmp(buffer, "/redo", 5)) {
+					if(redo(board, &pcurr, un_re)) puts("error: redo unavailable");
+					else {
+						print_matrix(board);
+						un_re = 0;
+					}
+					continue;
+				}
 			}
 			i = syntax_check(buffer);
 			if(!i) {
@@ -47,10 +71,18 @@ int main () {
 			i = command_check(board, buffer);
 		} while(!i);
 		
-		i1 = SIZE - (buffer[2] - '0');
-		j1 = buffer[1] - 'a';
-		i2 = SIZE - (buffer[4] - '0');
-		j2 = buffer[3] - 'a';
+		new_move.i1 = i1 = SIZE - (buffer[2] - '0');
+		new_move.j1 = j1 = buffer[1] - 'a';
+		new_move.i2 = i2 = SIZE - (buffer[4] - '0');
+		new_move.j2 = j2 = buffer[3] - 'a';
+		new_move.type1 = buffer[0];
+		new_move.type2 = board[i2][j2].type;
+		new_move.player1 = player;
+		new_move.player2 = board[i2][j2].player;
+		new_move.state1 = board[i1][j1].state;
+		new_move.state2 = board[i2][j2].state;
+		
+		list_push(&pcurr, new_move);
 		
 		if(en_passant) {
 			en_passant = 0;
