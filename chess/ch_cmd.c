@@ -29,9 +29,8 @@ int command_check(BOARD (*board)[SIZE], char *s) {
 	}
 	
 	if(board[i2][j2].type == 'K') {
-		printf("\nPlayer %d has won!\n", player+1);
-		free_danger(board);
-		exit(EXIT_SUCCESS);
+		winner = player + 1;
+		return 1;
 	}
 	
 	if(is_still_mate(board, i1, j1, i2, j2)) {

@@ -9,6 +9,7 @@
 #include "list.h"
 #include "chess.h"
 #include "redo_undo.h"
+#include "menu.h"
 int winner = 0;
 int player = 0;
 int check = 0;
@@ -16,9 +17,10 @@ int castling = 0;
 int per = 1;	//if !0 then error msg will be print, else it will not.
 
 int main () {
+	if(print_menu()) return EXIT_SUCCESS;
+	
 	int en_passant = 0;
 	int i = 0, j = 0, i1, i2, j1, j2, k, p;
-	int un_re = 0;
 	int epi = 0, epj = 0;
 	int pieces[2], enemy = player^1;
 	pieces[0] = pieces[1] = 16;
@@ -40,26 +42,30 @@ int main () {
 			printf(player == 0 ? BLUE "Player 1: " CL_RESET : RED  "Player 2: "  CL_RESET);
 			fgets(buffer, MAX_BUFFER, stdin);
 			if(buffer[0] == '/') {
-				if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5)) 
+				if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
+					print_list(pcurr);
+					free_danger(board);
 					exit(EXIT_SUCCESS);
+				}
 				if(!strncmp(buffer, "/ff", 3)) {
 					printf("\nPlayer %d won!\n", player == 0 ? 2 : 1);
+					print_list(pcurr);
+					free_danger(board);
 					exit(EXIT_SUCCESS);
 				}
 				if(!strncmp(buffer, "/undo", 5)) {
 					if(undo(board, &pcurr)) puts("error: undo unavailable.");
-					else {
-						print_matrix(board);
-						un_re = 1;
-					}
+					else print_matrix(board);
 					continue;
 				}
 				if(!strncmp(buffer, "/redo", 5)) {
-					if(redo(board, &pcurr, un_re)) puts("error: redo unavailable");
-					else {
-						print_matrix(board);
-						un_re = 0;
-					}
+					if(redo(board, &pcurr)) puts("error: redo unavailable");
+					else print_matrix(board);
+					continue;
+				}
+				if(!strncmp(buffer, "/help", 5)) {
+					chess_rules();
+					print_matrix(board);
 					continue;
 				}
 			}
@@ -83,6 +89,8 @@ int main () {
 		new_move.state2 = board[i2][j2].state;
 		
 		list_push(&pcurr, new_move);
+		
+		if(winner) break;
 		
 		if(en_passant) {
 			en_passant = 0;
@@ -153,6 +161,7 @@ int main () {
 					}	//Checks if it is stalemate if king isn't attacked. (bad version, needs upgrade :P)
 					else	if(stalemate(board)) {
 								puts("Stalemate!\nIt's a draw!");
+								print_list(pcurr);
 								free_danger(board);
 								return EXIT_SUCCESS;
 					}
@@ -165,7 +174,7 @@ CONT:;
 	}while(!winner);
 	
 	printf("\nPlayer %d won!\n", winner);
-	
+	print_list(pcurr);
 	free_danger(board);
 	
 	return EXIT_SUCCESS;

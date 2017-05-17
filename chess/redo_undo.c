@@ -31,7 +31,7 @@ int undo(BOARD (*board)[SIZE], NODE **pcurr) {
 	return 1; 
 }
 
-int redo(BOARD (*board)[SIZE], NODE **pcurr, int re_un) {
+int redo(BOARD (*board)[SIZE], NODE **pcurr) {
 	if(*pcurr != NULL) {
 		int i = 0;
 		MOVE inf;

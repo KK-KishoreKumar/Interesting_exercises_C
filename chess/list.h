@@ -19,3 +19,5 @@ typedef struct node_st {
 NODE *make_node(MOVE);
 void list_push(NODE **, MOVE);
 void delete_fnodes(NODE **);
+NODE *find_start(NODE *);
+void print_list(NODE *);

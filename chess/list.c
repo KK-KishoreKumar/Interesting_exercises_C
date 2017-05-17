@@ -44,3 +44,30 @@ void delete_fnodes(NODE **pcurr) {
 		}
 	}
 }
+NODE *find_start(NODE *pcurr) {
+	if(pcurr!=NULL) {
+		while(pcurr->pprev != NULL)
+			pcurr = pcurr->pprev;
+	}
+	return pcurr;
+}
+void print_list(NODE *pcurr) {
+	NODE *start = find_start(pcurr);
+	if(start!=NULL){
+		FILE *pout = fopen("command_history.txt", "w");
+		if(pout == NULL) {
+			puts("error: failed to create 'command_history.txt' output file.");
+			exit(EXIT_FAILURE);
+		}
+		while(start != NULL) {
+			fprintf(pout, "Player %d: %c%c%d%c%d\r\n", start->inf.player1 + 1,
+																					start->inf.type1,
+																					start->inf.j1 + 'a',
+																					SIZE - start->inf.i1,
+																					start->inf.j2 + 'a',
+																					SIZE - start->inf.i2);
+			start = start->pnext;
+		}
+		fclose(pout);
+	}
+}
