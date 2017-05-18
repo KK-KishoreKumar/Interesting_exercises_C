@@ -1,0 +1,23 @@
+Šah u programskom jeziku C - Autor programa: Danilo Novakovic
+
+1. UOPŠTENE INFORMACIJE
+Šah je sportska igra na ploèi (tabli) za dva igraèa, nastala pre više od 2000 godina.
+Tabla je podeljena na 8 kolona i 8 redovna polja, dakle sadrži 64 polja koja su naizmenièno crne i bele boje. 
+Svaki igraè poèinje igru sa 16 figura. Figure su: kralj, kraljica(ili dama), top(ili kula) - 2 komada, skakaè(ili konj)
+-2 komada, lovac (ili laufer) (2komada), pešak(ili pion) - 8 komada. Jedan igraè igra belim, a drugi crnim figurama, 
+naizmenièno pomerajuæi svoje figure, pri èemu beli ima prednost prvog poteza.
+Cilj igre je dovesti protivnika u šah-mat (šah-mat znaèi mrtav kralj) situaciju.
+											(Wikipedia)
+Više o pravilima šaha, kretanju figura i notaciji koju sam koristio u mom programu možete naæi u chess_manual.txt 
+kao i u bilo kom momentu tokom rada programa kucajuæi komandu /help ili odabrajuci opciju 2. iz main meni-ja. 
+
+2. ZAHTEVI
+Ova igra koristi standardne biblioteke C jezika (ANSII C standard)
+(Nikakve dodatne biblioteke nisu potrebne, potreban je samo terminal i neki kompajler tipa GCC)
+
+3. KOMPAJLIRANJE
+
+Linux: Otvoriti terminal, otiæi u direktorijum sa izvornim fajlovima i ukucati sledeæe:
+gcc ch_board.c ch_cmd.c ch_danger.c checkmate.c chess.c list.c menu.c redo_undo.c stalemate.c
+ 
+Za detaljnije informacije pogledati dokumentaciju.

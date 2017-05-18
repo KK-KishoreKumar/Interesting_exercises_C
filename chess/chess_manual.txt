@@ -1,4 +1,20 @@
 ##### CHESS MANUAL #####
+    Copyright (C) 2017  Danilo Novakoviæ
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+(source: Wikipedia)
 
 Piece names: (serbian piece names)
  K - kralj (king), 
@@ -14,6 +30,7 @@ Commands supported:
 /ff - surrender | resignation
 /undo  - undoes previous move of the current player (which means last 2 moves)
 /redo - redoes last undo-ed move 
+/help - prints Chess Manual whenever you want during the game
 NOTE: 1) You can't redo if you undo all the way up to the beginning of the game
       2) You can't redo if you make a different move after using /undo
 
@@ -75,3 +92,5 @@ This can involve capturing the checking piece; interposing a piece between the c
 if the attacking piece is a queen, rook, or bishop and there is a square between it and the king); or moving the king to a square where it is not under attack. 
 Castling is not a permissible response to a check. The object of the game is to checkmate the opponent; this occurs when the opponent's king is in check, 
 and there is no legal way to remove it from attack. It is illegal for a player to make a move that would put or leave the player's own king in check
+
+
