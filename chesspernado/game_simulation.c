@@ -3,6 +3,7 @@
 #include "waves.h"
 #include "special_moves.h"
 #include "list.h"
+#include "menu.h"
 
 unsigned char start_game_simulation(void) {
 	BOARD board[HEIGHT][WIDTH];
@@ -48,7 +49,7 @@ unsigned char start_game_simulation(void) {
 			printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);		
 			printf("\x1b[37;1;4mTASK\x1b[0m: SAVE KING!\n");
 			if(points != 0) {
-				printf("hint1: use suicide rooks\n");
+				printf("hint1: use suicide rooks (you can't move happy king)\n");
 				printf("hint2: use /buy & /skip commands (/buy won't end move)\n");
 			}else printf("hint: use /skip command to finish move\n");
 			if((temp = get_input_tuto(board, &points)) == 1)

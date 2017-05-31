@@ -19,9 +19,9 @@
 #include "list.h"
 #define REVIVE_POINTS 60
 #define BUY_POINTS 90
-#define BUY_SUICIDE_ROOK 30
-#define MIN_POINTS 10
-#define BUY_HAPPY_KING 10
+#define BUY_SUICIDE_ROOK 18
+#define MIN_POINTS 6
+#define BUY_HAPPY_KING 6
 int undo(BOARD (*)[WIDTH], NODE **, int *);
 int revive(BOARD (*)[WIDTH], int *);
 void count_player(BOARD (*)[WIDTH], int *, int *);

@@ -19,6 +19,7 @@
 #include "tutorial.h"
 //returns 1 if person wants to exit the program
 int print_menu() {
+	printf("\e[8;50;100t"); // resizes terminal
 	system("tput reset");
 	char  option;
 	do {		

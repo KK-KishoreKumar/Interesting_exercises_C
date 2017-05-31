@@ -91,8 +91,10 @@ int revive(BOARD (*board)[WIDTH], int *points) {
 				continue;
 			}
 			if(*++p < '1' || *p > '5') {
-				printf("\x1b[31;1merror:\x1b[0m unrecognized char %c\nusage ex. \x1b[32;1mc\x1b[33;1m3\x1b[0m"
-				"(\x1b[32;1mcolumn/\x1b[33;1mrow\x1b[0m)\n", *p);
+				if(*p <= '9') printf("\x1b[31;1merror\x1b[0m: MAX 5th ROW!\n");
+				else 
+				printf("\x1b[31;1merror:\x1b[0m unrecognized char %c\nusage ex. " 
+				"\x1b[32;1mc\x1b[31;1m3\x1b[0m (\x1b[32;1mcolumn/\x1b[31;1mrow\x1b[0m)\n", *p);
 				continue;
 			}
 			i = HEIGHT - (*p - '0');
@@ -207,8 +209,10 @@ int buy(BOARD (*board)[WIDTH], int *points) {
 			continue;
 		}
 		if(*++p < '1' || *p > '5') {
-			printf("\x1b[31;1merror:\x1b[0m unrecognized char %c\nusage ex. \x1b[32;1mc\x1b[33;1m3\x1b[0m"
-				"(\x1b[32;1mcolumn/\x1b[33;1mrow\x1b[0m)\n", *p);
+			if(*p <= '9') printf("\x1b[31;1merror\x1b[0m: MAX 5th ROW!\n");
+				else 
+				printf("\x1b[31;1merror:\x1b[0m unrecognized char %c\nusage ex. " 
+				"\x1b[32;1mc\x1b[31;1m3\x1b[0m (\x1b[32;1mcolumn/\x1b[31;1mrow\x1b[0m)\n", *p);
 			continue;
 		}
 		i = HEIGHT - (*p - '0');

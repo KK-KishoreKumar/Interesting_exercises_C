@@ -99,8 +99,13 @@ SKIPWV:
 						continue;
 					}
 					else if(!strncmp(buffer, "/revive", 7)) {
+						boardcpy(inf.board, board);
+						inf.points = points;
+						list_push(&pcurr, inf);
+						
 						if(!revive(board, &points)) {
 							puts("error: revive unavailable");
+							undo(board, &pcurr, &points);
 						}
 						else {
 							print_matrix(board);
@@ -109,7 +114,13 @@ SKIPWV:
 						continue;
 					}
 					else if(!strncmp(buffer, "/buy", 4)) {
-						buy(board, &points);
+						boardcpy(inf.board, board);
+						inf.points = points;
+						list_push(&pcurr, inf);
+						
+						if(!buy(board, &points)) {
+							undo(board, &pcurr, &points);
+						}
 						print_matrix(board);
 						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 						continue;
@@ -184,7 +195,7 @@ SKIP:;
 			if(is_empty(board, player) || is_full(board)) 
 				end++;
 			else if(!ai_move(board, &points)) {
-				if(wave < 5) generate_wave1(board, 4 - wave);
+				if(wave < 3) generate_wave1(board, wave);
 				else generate_wave1(board, 3);
 			}
 			
@@ -209,8 +220,10 @@ SKIP:;
 		
 		if(!end) {
 			//prepeare for new wave
-			moves = 3;
 			printf("\x1b[35;1mWave %d has finished!\x1b[0m\n", wave);
+WAVE_PREPARATION:;
+			moves = 3;
+			
 			do{
 				printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 				do {
@@ -221,7 +234,7 @@ SKIP:;
 						if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
 							exit(EXIT_SUCCESS);
 						}
-						if(!strncmp(buffer, "/skip", 5)) {
+						else if(!strncmp(buffer, "/skip", 5)) {
 							printf("Are you sure you want to skip? (y/n) : ");
 							scanf(" %c", &buffer[0]);
 							getchar();
@@ -229,39 +242,49 @@ SKIP:;
 								goto SKIP2;
 							continue;
 						}
-						if(!strncmp(buffer, "/revive", 7)) {
+						else if(!strncmp(buffer, "/revive", 7)) {
+							boardcpy(inf.board, board);
+							inf.points = points;
+							list_push(&pcurr, inf);
+							
 							if(!revive(board, &points)) {
 								puts("error: revive unavailable");
+								undo(board, &pcurr, &points);
 							}
 							else {
 								print_matrix(board);
 								printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
-								printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 							}
 							continue;
 						}
-						if(!strncmp(buffer, "/buy", 4)) {
-							buy(board, &points);
+						else if(!strncmp(buffer, "/buy", 4)) {
+							boardcpy(inf.board, board);
+							inf.points = points;
+							list_push(&pcurr, inf);
+							
+							if(!buy(board, &points)) {
+								undo(board, &pcurr, &points);
+							}
 							print_matrix(board);
 							printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 							continue;
 						}
-						if(!strncmp(buffer, "/help", 5)) {
+						else if(!strncmp(buffer, "/help", 5)) {
 							chesspernado_rules();
 							print_matrix(board);
 							printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 							printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 							continue;
 						}
-						if(!strncmp(buffer, "/undo",5)) {
+						else if(!strncmp(buffer, "/undo",5)) {
 							if(!undo(board, &pcurr, &points)) {
 								puts("error: undo unavailable.");
 							}
 							else {
 								print_matrix(board);
 								printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
-								printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 								moves++;
+								printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 							}
 							continue;
 						}
@@ -295,6 +318,19 @@ SKIP:;
 				print_matrix(board);
 				printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 			}while(--moves > 0);
+			
+			do{
+				printf("Do you want to keep the current setup? (y/n) : ");
+				scanf(" %c", &buffer[0]);
+				getchar();
+				if(buffer[0] == 'N' || buffer[0] == 'n') {
+					while(undo(board, &pcurr, &points));
+					print_matrix(board);
+					printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+					goto WAVE_PREPARATION;
+				}
+			}while(buffer[0] != 'Y' && buffer[0]!='y');
+							
 SKIP2:;
 			delete_full_list(&pcurr);
 			wave++;
