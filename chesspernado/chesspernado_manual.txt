@@ -22,7 +22,7 @@
  @7K@ - happy king
 ~
 @2# COMMANDS SUPPORTED:@
-/@7back@ - only in @2tutorial@ mode. Goes back to the main menu.
+/@7back@ - goes back to the main menu.
 /@7random@ - only at init_setup (beginning stage). 
 	Generates 3 knights and 2 bishops on random positions.
 /@1exit@, /@1end@  - exits the program.

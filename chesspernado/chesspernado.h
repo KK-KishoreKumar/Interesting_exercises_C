@@ -38,15 +38,15 @@
 #ifndef __BOARD__
 #define __BOARD__
 typedef struct board_st{
-	int type;	// type = {K,P,N,B,0}
-	int player;	// player = {0, 1}
-	int state;
+	int type : 8;	// type = {K,P,N,B,0} 
+	int player : 2;	// player = {-1, 0, 1}
+	unsigned char state : 3;
 } BOARD;
 
-extern int player;
-extern int per;
-extern int end;
-extern int difficulty;
+extern unsigned char player;
+extern unsigned char per;
+extern unsigned char end;
+extern unsigned char difficulty;
 
 //basic board functions (print, init, copy)
 void print_matrix(BOARD (*)[WIDTH]);
@@ -59,7 +59,7 @@ void rm_piece(BOARD *);
 void rm_wave(BOARD (*)[WIDTH]);
 
 //init setup
-void board_setup(BOARD (*)[WIDTH]);
+int board_setup(BOARD (*)[WIDTH]);
 void wait(int);
 
 //syntax and command check functions

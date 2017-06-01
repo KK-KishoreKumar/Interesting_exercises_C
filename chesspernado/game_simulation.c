@@ -102,8 +102,8 @@ unsigned char start_game_simulation(void) {
 	board[6][6].type = board[10][1].type = 'B';
 	board[5][2].player = board[4][7].player = board[9][4].player = board[6][6].player = board[10][1].player = 0;
 	print_matrix(board);
-	printf("AIs turn...");
-	wait(3);
+	puts("AIs turn...");
+	wait(2);
 	ai_move(board, &points);
 	
 	points = REVIVE_POINTS;
@@ -152,10 +152,10 @@ int get_input_tuto(BOARD (*board)[WIDTH], int *points) {
 	int nb_fails = 0;
 	int i, i1, j1, i2, j2;
 	
-	printf("note: type /back to go back to main menu at any time.");
+	printf("note: type \x1b[37;1m/back\x1b[0m to go back to main menu at any time.\n");
 	do {
 				i = 0;
-				printf(BLUE "\nCommand: " CL_RESET);
+				printf(BLUE "Command: " CL_RESET);
 				fgets(buffer, MAX_BUFFER, stdin);
 				if(buffer[0] == '/') {
 					if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
@@ -190,9 +190,12 @@ int get_input_tuto(BOARD (*board)[WIDTH], int *points) {
 				}
 				i = syntax_check(buffer);
 				if(!i) {
-					printf("Notation: Piece \x1b[31;1mtype\x1b[0m / \x1b[35;1mfrom\x1b[0m / \x1b[32;1mto\x1b[0m" 
-					" - where both '\x1b[35;1mfrom\x1b[0m' and '\x1b[32;1mto\x1b[0m' are defined \nas column/row. ");
-					printf("example: \x1b[31;1mN\x1b[35;1me6\x1b[32;1mc5\x1b[0m \x1b[33;1m*CASE SENSITIVE!*\x1b[0m\n");
+					if(buffer[0] == 'K') puts("error: \x1b[31;1mYOU CAN'T MOVE HAPPY KING!\x1b[0m");
+					else {
+						printf("Notation: Piece \x1b[31;1mtype\x1b[0m / \x1b[35;1mfrom\x1b[0m / \x1b[32;1mto\x1b[0m" 
+						" - where both '\x1b[35;1mfrom\x1b[0m' and '\x1b[32;1mto\x1b[0m' are defined \nas column/row. ");
+						printf("example: \x1b[31;1mN\x1b[35;1me6\x1b[32;1mc5\x1b[0m \x1b[33;1m*CASE SENSITIVE!*\x1b[0m\n");
+					}
 					if(++nb_fails > 1) {
 						wait(3);
 						system("tput reset");

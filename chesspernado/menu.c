@@ -23,7 +23,7 @@ int print_menu() {
 	system("tput reset");
 	char  option;
 	do {		
-		puts("\n\x1b[32;4;1m### Chesspernado ###\x1b[0m");
+		puts("\n\x1b[32;4;1m### Chesspernado v1.15 ###\x1b[0m");
 		puts("\x1b[35;1m Author: Danilo Novakovic FTN Novi Sad\x1b[0m");
 		puts("");
 		puts("\x1b[37;4mMain Menu\x1b[0m");
@@ -31,7 +31,6 @@ int print_menu() {
 		puts("\t\x1b[37m2. Rules | Help\x1b[0m");
 		puts("\t\x1b[37m3. Difficulty\x1b[0m");
 		puts("\t\x1b[32;1m4. Tutorial\x1b[0m");
-		puts("\t\x1b[33;1m5. BONUS\x1b[0m: Standard PvP Chess (2 players)");
 		puts("\x1b[31;1m\tx  - Exit\x1b[0m");
 		
 		printf("\n\x1b[37;4mOption\x1b[0m: ");
@@ -41,7 +40,6 @@ int print_menu() {
 			case '2': chesspernado_rules(); break;
 			case '3': set_difficulty(); break;
 			case '4': start_tutorial(); end = 0; break;
-			case '5': system("./chess/a.out");  break;
 			case 'x': case 'X': return 1; break;
 		}
 		system("tput reset");
@@ -72,7 +70,8 @@ void chesspernado_rules() {
 	}
 	system("tput reset");
 	char c = 0, prev = 0;
-	unsigned char alpha= 0;
+	unsigned char alpha = 0, tildas = 0, temp_counter = 0;
+FILE_PRINTING:;	
 	while((c = fgetc(pin))!=EOF) {
 		if(c!='~') {
 			if(prev == '@' && (alpha&1)) {
@@ -96,20 +95,59 @@ void chesspernado_rules() {
 			prev = c;
 		}
 		else {
+			
 			do{
-				printf("\nContinue (Y/n) ? ");
+				printf("\nContinue [Y/n] or previous [p] ? ");
 				scanf("%c", &c);
 				if(c != '\n') getchar();
-			}while(c!='y' && c!='Y' && c!='n' && c!='N' && c!='\n'); 
-			if(c == 'n' || c == 'N') return;
+				switch(c) {
+					case 'n' : case 'N' : return; break;
+					case 'p' : case 'P' : if(!tildas) {
+											puts("error: this is first page (there are no pages before it).");
+										  }
+										  else {
+										  	temp_counter = 0;
+										  	rewind(pin);
+										  	while(temp_counter < tildas-1) {
+										  		if(fgetc(pin) == '~')
+										  			temp_counter++;
+										  	}
+										  	c = 'y';
+										  	tildas-=2;
+										  }
+					break;
+				}
+			}while(c!='y' && c!='Y' && c != '\n'); 
+			
+			tildas++;
+			
 			system("tput reset");
 		}
 	}
 	putchar('\n');
 	do{
-		printf("\nReturn? (Y/n) : ");
+		printf("\nReturn [Y] or previous [p] ? ");
 		scanf("%c", &c);
 		if(c!='\n') getchar();
+		switch(c) {
+					case 'n' : case 'N' : return; break;
+					case 'p' : case 'P' : if(!tildas) {
+											puts("error: this is first page (there are no pages before it).");
+										  }
+										  else {
+										  	temp_counter = 0;
+										  	rewind(pin);
+										  	while(temp_counter < tildas-1) {
+										  		if(fgetc(pin) == '~')
+										  			temp_counter++;
+										  	}
+										  	c = 'y';
+										  	tildas--;
+										  	system("tput reset");
+										  	goto FILE_PRINTING;
+										  }
+					break;
+				}
 	}while(c != 'y' && c != 'Y' && c!='\n');
 	fclose(pin);
 }

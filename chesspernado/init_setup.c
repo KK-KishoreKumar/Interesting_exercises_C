@@ -17,10 +17,10 @@
 */
 #include "chesspernado.h"
 #include "waves.h"
-void board_setup(BOARD (*board)[WIDTH]){
+int board_setup(BOARD (*board)[WIDTH]){
 	unsigned short bishops;
 	unsigned short knights;
-	char buffer[5];
+	char buffer[MAX_BUFFER];
 	char *p;
 	char option = 'n';
 	int i, j;
@@ -38,11 +38,8 @@ void board_setup(BOARD (*board)[WIDTH]){
 			if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
 				exit(EXIT_SUCCESS);
 			}
-			if(!strncmp(buffer, "/re", 3)) {
-				init_board(board);
-				bishops = 2;
-				knights = 3;
-				continue;
+			if(!strncmp(buffer, "/back", 5)) {
+				return 1;
 			}
 			if(!strncmp(buffer, "/random", 7)) {
 				srand(time(NULL));
@@ -62,6 +59,12 @@ void board_setup(BOARD (*board)[WIDTH]){
 						}
 					}
 				}
+				continue;
+			}
+			if(!strncmp(buffer, "/re", 3)) {
+				init_board(board);
+				bishops = 2;
+				knights = 3;
 				continue;
 			}
 			p = &buffer[0];
@@ -124,7 +127,7 @@ void board_setup(BOARD (*board)[WIDTH]){
 				init_board(board);
 		}
 	}while(option == 'n' || option == 'N');
-	
+	return 0;
 }
 //waits n seconds
 void wait(int n) {

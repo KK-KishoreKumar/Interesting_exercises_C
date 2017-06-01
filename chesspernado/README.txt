@@ -1,4 +1,4 @@
-Chessparnado - Author: Danilo Novakovic
+Chessparnado v1.15 - Author: Danilo Novakovic
 
 1. GENERAL INFORMATION
 Chesspernado is an original game made by Danilo Novakovic inspired by chess, tetris and plants vs zombie idea.
@@ -16,7 +16,7 @@ This game uses C programming language standard libraries (ANSII C Standard)
 3. COMPILING
 
 Linux: Open terminal, navigate to directory containing the source files and execute the following command:
-"make all other"
+"make"
 
 
 For more detailed information, see documentation file.

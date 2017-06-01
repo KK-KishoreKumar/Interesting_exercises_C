@@ -75,7 +75,9 @@ void delete_full_list(NODE **pcurr) {
 	if(*pcurr != NULL) {
 		NODE *pstart = find_start(*pcurr);
 		*pcurr = NULL;
-		delete_fnodes(&pstart);
-		free(pstart);
+		if(pstart != NULL) {
+			delete_fnodes(&pstart);
+			free(pstart);
+		}
 	}
 }

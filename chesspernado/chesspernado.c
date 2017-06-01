@@ -26,11 +26,12 @@
 #include "ai_movement.h"
 #include "special_moves.h"
 #include "menu.h"
+#include "mini_stack.h"
 #define MAX_NAME 25
-int player = 0;
-int per = 1;	//if !0 then error msg will be print, else it will not.
-int end = 0;
-int difficulty = 1;  // 1 - easy (default);  2 - hard
+unsigned char player = 0;
+unsigned char per = 1;	//if !0 then error msg will be print, else it will not.
+unsigned char end = 0;
+unsigned char difficulty = 1;  // 1 - easy (default);  2 - hard
 
 int main () {
 	if(print_menu())
@@ -44,14 +45,21 @@ int main () {
 	char buffer[MAX_BUFFER];
 	char *s;
 	BOARD board [HEIGHT][WIDTH];
-	
+	MINI_STACK kid_stack;
+	init_mini_stack(&kid_stack);
 	TYPE inf;
-	NODE *pcurr = NULL;
-	
+	NODE *pcurr;
+BEGINNING:;	
+	pcurr = NULL;
 	init_board(board);
 	
 	//Initial board setup
-	board_setup(board);
+	if(board_setup(board)) {
+		if(print_menu()) {
+			return 0;
+		}
+		else goto BEGINNING;
+	}
 	
 	end = 0; 
 			
@@ -131,7 +139,19 @@ SKIPWV:
 						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 						continue;
 					}
+					else if(!strncmp(buffer, "/back", 5)) {
+						if(print_menu()) {
+							return 0;
+						}
+						else {
+							delete_full_list(&pcurr);
+							moves = points = 0;
+							wave = 1;
+							goto BEGINNING; 
+						}	
+					}
 					else if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
+						delete_full_list(&pcurr);
 						exit(EXIT_SUCCESS);
 					}	
 					//2 ifs below are cheat codes meant for those who like to exploit games
@@ -223,7 +243,6 @@ SKIP:;
 			printf("\x1b[35;1mWave %d has finished!\x1b[0m\n", wave);
 WAVE_PREPARATION:;
 			moves = 3;
-			
 			do{
 				printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 				do {
@@ -232,6 +251,8 @@ WAVE_PREPARATION:;
 					fgets(buffer, MAX_BUFFER, stdin);
 					if(buffer[0] == '/') {
 						if(!strncmp(buffer, "/end", 4) || !strncmp(buffer, "/exit",5))  {
+							destroy_mini_stack(&kid_stack);
+							delete_full_list(&pcurr);
 							exit(EXIT_SUCCESS);
 						}
 						else if(!strncmp(buffer, "/skip", 5)) {
@@ -252,6 +273,7 @@ WAVE_PREPARATION:;
 								undo(board, &pcurr, &points);
 							}
 							else {
+								mini_push(&kid_stack, 1);
 								print_matrix(board);
 								printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 							}
@@ -265,6 +287,7 @@ WAVE_PREPARATION:;
 							if(!buy(board, &points)) {
 								undo(board, &pcurr, &points);
 							}
+							else mini_push(&kid_stack, 1);
 							print_matrix(board);
 							printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 							continue;
@@ -283,7 +306,10 @@ WAVE_PREPARATION:;
 							else {
 								print_matrix(board);
 								printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
-								moves++;
+								if(moves < 3) {
+									if(mini_pop(&kid_stack) == 2)
+										moves++;
+								}
 								printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 							}
 							continue;
@@ -301,6 +327,8 @@ WAVE_PREPARATION:;
 				inf.points = points;
 				list_push(&pcurr, inf);
 				
+				mini_push(&kid_stack, 2);
+				
 				s = &buffer[1];
 				j1 = *s++ - 'a';
 				i1 = *s++ - '0';
@@ -314,7 +342,7 @@ WAVE_PREPARATION:;
 				else i2 = HEIGHT - i2;
 				
 				mov_figure(board, i1, j1, i2, j2);
-		
+				
 				print_matrix(board);
 				printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
 			}while(--moves > 0);
@@ -333,6 +361,7 @@ WAVE_PREPARATION:;
 							
 SKIP2:;
 			delete_full_list(&pcurr);
+			destroy_mini_stack(&kid_stack);
 			wave++;
 		}
 	}while(!end);

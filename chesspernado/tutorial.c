@@ -22,7 +22,7 @@
 #define BG_CYAN "\x1b[44m"
 void start_tutorial(void) {
 	BOARD board[HEIGHT][WIDTH];
-	char c;
+	//char c;
 	FILE *pin = fopen("tutorial.txt", "r");
 	if(pin == NULL) {
 		puts("error: failed to open tutorial.txt");
@@ -158,7 +158,7 @@ void print_tutorial(BOARD (*board)[WIDTH], int p) {
 
 unsigned char start_ai_animation(FILE *pin) {
 	int p = 1;
-	char c;
+	//char c;
 	system("tput reset");
 	pin = tutorial_lines(pin);
 	if(!continue_msg()) return 0;
