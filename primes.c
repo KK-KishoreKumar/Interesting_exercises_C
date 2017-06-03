@@ -15,7 +15,6 @@ unsigned main(int nb_arg, char *args[]) {
 		return EXIT_FAILURE;
 	}
     unsigned max_test = (unsigned) sqrt((double)upper_bound) + 1;
-	printf("max_test = %u\n", max_test);
 	unsigned primes[max_test];
 	unsigned *left, *right = primes;
     *right++ = 2;
@@ -24,7 +23,8 @@ unsigned main(int nb_arg, char *args[]) {
      *right++ = 7;
      *right = 11;
 //TODO: Find max_test primes  
-    unsigned temp, truth;
+    unsigned temp;
+	unsigned char truth;
     unsigned square;
 	left = primes;
 	while(left <= right) {
@@ -32,6 +32,26 @@ unsigned main(int nb_arg, char *args[]) {
 		left++;
 	}
 	if(lower_bound < *right) lower_bound = (*right)+2;
+	else {
+		//TODO: Setup min needed test primes in array 
+		for(temp = (*right)+2; temp < lower_bound; temp+=2) {
+			square = (unsigned)sqrt((double)temp) + 1;
+			truth ^= truth;
+			truth++;
+			for(left = &primes[1]; *left < square; left++) {
+			   if(left > right) break;
+			   if(temp%(*left) == 0) { 
+					truth ^= truth;
+					break;
+				}
+			}
+			if(truth) {
+				if(temp < max_test) *++right = temp;
+				else break; // if curr prime is >= max test prime then end the loop
+			}
+		}
+	}
+	if((lower_bound & 1) == 0) lower_bound++;
 	for(temp = lower_bound; temp < upper_bound; temp+=2) {
         square = (unsigned)sqrt((double)temp) + 1;
         truth ^= truth;
