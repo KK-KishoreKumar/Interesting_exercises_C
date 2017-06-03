@@ -27,7 +27,13 @@
 #include "special_moves.h"
 #include "menu.h"
 #include "mini_stack.h"
+#include "tutorial.h"
 #define MAX_NAME 25
+#define SCORE_MSG printf("\x1b[35;1mScore\x1b[0m: %d" ,  points); \
+		printf("\x1b[35;1m\tWave: \x1b[0m %d\tDifficulty: ", wave); \
+		printf(difficulty == 1 ? "\x1b[32;1mEasy\x1b[0m\n\n" \
+									 : "\x1b[31;1mHard\x1b[0m\n\n"); 		
+							
 unsigned char player = 0;
 unsigned char per = 1;	//if !0 then error msg will be print, else it will not.
 unsigned char end = 0;
@@ -84,7 +90,13 @@ SKIPWV:
 			if(end) break;
 			
 			print_matrix(board);
-			printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+			SCORE_MSG;
+			if(difficulty == 1) {
+				if((moves%3) == 0)
+					printf("\x1b[32;1mtip\x1b[0m: type \x1b[1m/hint\x1b[0m to see more info on specific piece\n");
+				if((moves++%4) == 0)
+					printf("\x1b[32;1mtip\x1b[0m: if you ever feel lost type \x1b[1m/help\x1b[0m for chesspernado manual\n");
+			}
 			do {
 				i = 0;
 				printf(BLUE "Player 1: " CL_RESET);
@@ -102,7 +114,7 @@ SKIPWV:
 						}
 						else {
 							print_matrix(board);
-							printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+							SCORE_MSG;
 						}
 						continue;
 					}
@@ -117,7 +129,7 @@ SKIPWV:
 						}
 						else {
 							print_matrix(board);
-							printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+							SCORE_MSG;
 						}
 						continue;
 					}
@@ -130,13 +142,18 @@ SKIPWV:
 							undo(board, &pcurr, &points);
 						}
 						print_matrix(board);
-						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+						SCORE_MSG;
 						continue;
 					}
 					else if(!strncmp(buffer, "/help", 5)) {
 						chesspernado_rules();
 						print_matrix(board);
-						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+						SCORE_MSG;
+						continue;
+					}
+					else if(!strncmp(buffer, "/hint", 5)) {
+						hint_print(board);
+						SCORE_MSG;
 						continue;
 					}
 					else if(!strncmp(buffer, "/back", 5)) {
@@ -158,7 +175,7 @@ SKIPWV:
 					else if(!strncmp(buffer, "/HESOYAM", 8)) {
 						points+=1000;
 						print_matrix(board);
-						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+						SCORE_MSG;
 						continue;
 					}
 					else if(!strncmp(buffer, "/wvskip", 7)) {
@@ -205,7 +222,7 @@ SKIP:;
 			suicide_rook(board, player);
 			
 			print_matrix(board);
-			printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+			SCORE_MSG;
 			if(is_empty(board, enemy))
 				break;
 			
@@ -279,6 +296,11 @@ WAVE_PREPARATION:;
 							}
 							continue;
 						}
+						else if(!strncmp(buffer, "/hint", 5)) {
+							hint_print(board);
+							SCORE_MSG;
+							continue;
+						}
 						else if(!strncmp(buffer, "/buy", 4)) {
 							boardcpy(inf.board, board);
 							inf.points = points;
@@ -289,13 +311,13 @@ WAVE_PREPARATION:;
 							}
 							else mini_push(&kid_stack, 1);
 							print_matrix(board);
-							printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+							SCORE_MSG;
 							continue;
 						}
 						else if(!strncmp(buffer, "/help", 5)) {
 							chesspernado_rules();
 							print_matrix(board);
-							printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+							SCORE_MSG;
 							printf("You have \x1b[35;1m%d \x1b[0m moves left until new wave.\n", moves);
 							continue;
 						}
@@ -305,7 +327,7 @@ WAVE_PREPARATION:;
 							}
 							else {
 								print_matrix(board);
-								printf("\n\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+								SCORE_MSG;
 								if(moves < 3) {
 									if(mini_pop(&kid_stack) == 2)
 										moves++;
@@ -344,7 +366,7 @@ WAVE_PREPARATION:;
 				mov_figure(board, i1, j1, i2, j2);
 				
 				print_matrix(board);
-				printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+				SCORE_MSG;
 			}while(--moves > 0);
 			
 			do{
@@ -354,7 +376,7 @@ WAVE_PREPARATION:;
 				if(buffer[0] == 'N' || buffer[0] == 'n') {
 					while(undo(board, &pcurr, &points));
 					print_matrix(board);
-					printf("\x1b[35;1mScore\x1b[0m: %d\n\n", points);
+					SCORE_MSG;
 					goto WAVE_PREPARATION;
 				}
 			}while(buffer[0] != 'Y' && buffer[0]!='y');

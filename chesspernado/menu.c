@@ -23,7 +23,7 @@ int print_menu() {
 	system("tput reset");
 	char  option;
 	do {		
-		puts("\n\x1b[32;4;1m### Chesspernado v1.15 ###\x1b[0m");
+		puts("\n\x1b[32;4;1m### Chesspernado v1.16 ###\x1b[0m");
 		puts("\x1b[35;1m Author: Danilo Novakovic FTN Novi Sad\x1b[0m");
 		puts("");
 		puts("\x1b[37;4mMain Menu\x1b[0m");
@@ -50,7 +50,7 @@ void set_difficulty() {
 	char c;
 	system("tput reset");
 	puts("Select difficulty:");
-	puts("\t\x1b[32;1m1. Easy\x1b[0m");
+	puts("\t\x1b[32;1m1. Easy\x1b[0m (default)");
 	puts("\t\x1b[31;1m2. Hard\x1b[0m");
 	do{
 		printf("\n\x1b[37;4mOption\x1b[0m: ");
@@ -60,7 +60,7 @@ void set_difficulty() {
 	
 	difficulty = c - '0';
 	puts("Difficulty set successfully!");
-	wait(2);
+	wait(1);
 }
 void chesspernado_rules() {
 	FILE *pin = fopen("chesspernado_manual.txt", "r");

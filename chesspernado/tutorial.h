@@ -17,15 +17,16 @@
 */
 #include "chesspernado.h"
 void start_tutorial(void);
-void print_tutorial(BOARD (*)[WIDTH], int);
+void print_tutorial(BOARD (*)[WIDTH]);
 void update_pawn(BOARD (*)[WIDTH], int, int, int);
 void update_knight(BOARD (*)[WIDTH], int, int);
+void update_bishop(BOARD (*)[WIDTH], int, int);
 FILE * tutorial_lines(FILE *);
 int get_input_tuto(BOARD (*)[WIDTH], int *);
 void remove_states(BOARD (*)[WIDTH]); 
-void update_bishop(BOARD (*)[WIDTH], int, int);
 unsigned char start_ai_animation(FILE *);
 void find_bishop_ai(BOARD (*)[WIDTH], int *, int *);
+void hint_print(BOARD (*)[WIDTH]);
 
 //game simulation
 unsigned char start_game_simulation(void);

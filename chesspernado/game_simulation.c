@@ -166,7 +166,7 @@ int get_input_tuto(BOARD (*board)[WIDTH], int *points) {
 					else if(!strncmp(buffer, "/help", 5)) {
 						chesspernado_rules();
 						system("tput reset");
-						print_tutorial(board, 0);
+						print_tutorial(board);
 						printf("\x1b[35;1mScore\x1b[0m: %d\n\n", *points);
 						continue;
 					}
@@ -199,7 +199,7 @@ int get_input_tuto(BOARD (*board)[WIDTH], int *points) {
 					if(++nb_fails > 1) {
 						wait(3);
 						system("tput reset");
-						print_tutorial(board, 0);
+						print_tutorial(board);
 					}
 					continue;
 				}

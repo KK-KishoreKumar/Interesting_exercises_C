@@ -40,7 +40,7 @@ void start_tutorial(void) {
 	board[i][j].player = 0;
 	update_knight(board, i, j);
 	
-	print_tutorial(board, 0);
+	print_tutorial(board);
 	pin = tutorial_lines(pin);
 	printf("Notation: Piece \x1b[31;1mtype\x1b[0m / \x1b[35;1mfrom\x1b[0m / \x1b[32;1mto\x1b[0m" 
 	" - where both '\x1b[35;1mfrom\x1b[0m' and '\x1b[32;1mto\x1b[0m' are defined \nas column/row. ");
@@ -62,7 +62,7 @@ void start_tutorial(void) {
 	board[i][j].player = 0;
 	update_bishop(board, i, j);
 	
-	print_tutorial(board, 0);
+	print_tutorial(board);
 	pin = tutorial_lines(pin);
 	printf("\x1b[37;1;4mTASK\x1b[0m: Move bishop (\x1b[1mB\x1b[0m) to any "
 		"\x1b[32;1mAVAILABLE\x1b[0m field\n");
@@ -114,7 +114,7 @@ FILE *tutorial_lines(FILE *pin) {
 	}
 	return pin;
 }
-void print_tutorial(BOARD (*board)[WIDTH], int p) {
+void print_tutorial(BOARD (*board)[WIDTH]) {
 	int i, j, k = 0;
 	printf("\n\t     ");
 	for(i ^= i; i < WIDTH; printf("%c ", 'a' + i++));
@@ -189,7 +189,7 @@ unsigned char start_ai_animation(FILE *pin) {
 		}
 		system("tput reset");
 		update_pawn(board, i, j, p);
-		print_tutorial(board, 1);
+		print_tutorial(board);
 		printf("\n\t\x1b[34;1mDANGER\x1b[0m\t\x1b[32;1mAVAILABLE\x1b[0m\n");
 		wait(2);
 		if(!ai_move(board, NULL)) {
@@ -229,7 +229,7 @@ unsigned char start_ai_animation(FILE *pin) {
 			find_bishop_ai(board, &i, &j);
 			update_bishop(board, i, j);
 			system("tput reset");
-			print_tutorial(board, 1);
+			print_tutorial(board);
 			printf("\n\t\x1b[32;1mAVAILABLE\x1b[0m\n");
 			wait(2);
 			if(!ai_move(board, NULL)) {
@@ -259,33 +259,49 @@ void update_pawn(BOARD (*board)[WIDTH], int i, int j, int p) {
 		if(i+1 < HEIGHT) {
 			if(j+1 < WIDTH) board[i+1][j+1].state = 3;
 			if(j-1 >= 0) board[i+1][j-1].state = 3;
-			board[i+1][j].state = 2;
+			if(board[i+1][j].type == 0) board[i+1][j].state = 2;
 		}
 	}
 	else {
 		if(i-1 >= 0) {
 			if(j+1 < WIDTH) board[i-1][j+1].state = 3;
 			if(j-1 >= 0) board[i-1][j-1].state = 3;
-			board[i-1][j].state = 2;
+			if(board[i-1][j].type == 0) board[i-1][j].state = 2;
 		}
 	}
 }
 void update_knight(BOARD (*board)[WIDTH], int i, int j) {
 	if(i+1 < HEIGHT) {
-		if(j+2<WIDTH) board[i+1][j+2].state = 2;
-		if(j-2>=0) board[i+1][j-2].state = 2;
+		if(j+2<WIDTH) 
+			if(board[i+1][j+2].player != board[i][j].player) 
+				board[i+1][j+2].state = 2;
+		if(j-2>=0) 
+			if(board[i+1][j-2].player != board[i][j].player)
+				board[i+1][j-2].state = 2;
 	}
 	if(i-1 >= 0) {
-		if(j+2<WIDTH) board[i-1][j+2].state = 2;
-		if(j-2>=0) board[i-1][j-2].state = 2;
+		if(j+2<WIDTH)
+			if(board[i-1][j+2].player != board[i][j].player)
+				board[i-1][j+2].state = 2;
+		if(j-2>=0)
+			if(board[i-1][j-2].player != board[i][j].player)
+				board[i-1][j-2].state = 2;
 	}
 	if(i+2 < HEIGHT) {
-		if(j+1<WIDTH) board[i+2][j+1].state = 2;
-		if(j-1>=0) board[i+2][j-1].state = 2;
+		if(j+1<WIDTH)
+			if(board[i+2][j+1].player != board[i][j].player)
+				board[i+2][j+1].state = 2;
+		if(j-1>=0) 
+			if(board[i+2][j-1].player != board[i][j].player)
+				board[i+2][j-1].state = 2;
 	}
 	if(i-2 >= 0) {
-		if(j+1<WIDTH) board[i-2][j+1].state = 2;
-		if(j-1>=0) board[i-2][j-1].state = 2;
+		if(j+1<WIDTH)
+			if(board[i-2][j+1].player != board[i][j].player)
+				board[i-2][j+1].state = 2;
+		if(j-1>=0)
+			if(board[i-2][j-1].player != board[i][j].player)
+				board[i-2][j-1].state = 2;
 	}		
 }
 void update_bishop(BOARD (*board)[WIDTH], int i, int j) {
@@ -293,6 +309,7 @@ void update_bishop(BOARD (*board)[WIDTH], int i, int j) {
 	if(!board[i][j].player) {
 		for(k = 1; i - k >= 0; k++) {	
 			if(j - k >= 0) {
+				if(board[i-k][j-k].player == board[i][j].player) break;
 				board[i-k][j-k].state = 2;
 				if(board[i-k][j-k].type != 0) break;
 			}
@@ -300,6 +317,7 @@ void update_bishop(BOARD (*board)[WIDTH], int i, int j) {
 		}
 		for(k = 1; i - k >= 0; k++) {	
 			if(j + k < WIDTH) {
+				if(board[i-k][j+k].player == board[i][j].player) break;
 				board[i-k][j+k].state = 2;
 				if(board[i-k][j+k].type != 0) break;
 			}
@@ -308,6 +326,7 @@ void update_bishop(BOARD (*board)[WIDTH], int i, int j) {
 	}
 	for(k = 1; i + k < HEIGHT; k++) {	
 		if(j - k >= 0) {
+			if(board[i+k][j-k].player == board[i][j].player) break;
 			board[i+k][j-k].state = 2;
 			if(board[i+k][j-k].type != 0) break;
 		}
@@ -315,6 +334,7 @@ void update_bishop(BOARD (*board)[WIDTH], int i, int j) {
 	}
 	for(k = 1; i + k < HEIGHT; k++) {	
 		if(j + k < WIDTH) {
+			if(board[i+k][j+k].player == board[i][j].player) break;
 			board[i+k][j+k].state = 2;
 			if(board[i+k][j+k].type != 0) break;
 		}
@@ -340,4 +360,41 @@ void find_bishop_ai(BOARD (*board)[WIDTH], int *pi, int *pj) {
 			}
 		}
 	}
+}
+void hint_print(BOARD (*board)[WIDTH]) {
+	char buffer[MAX_BUFFER];
+	char *s;
+	unsigned char i, j, x = 1;
+	do{
+		print_matrix(board);
+		printf("note: type \x1b[31;1mx\x1b[0m to back out.\n");
+		printf("Type in place (\x1b[33;1mcolumn\x1b[0m/\x1b[32;1mrow\x1b[0m) of interest: ");
+		fgets(buffer, MAX_BUFFER, stdin);
+		if(buffer[0] == 'x') return;
+		
+		s = &buffer[0];
+		if(*s < 'a' || *s > 'h') continue;
+		if(*++s < '1' || *s > '9') continue;
+	
+		s = &buffer[0];
+		j = *s++ - 'a';
+		i = *s++ - '0';
+		if(*s >= '0' && *s <='2') i = HEIGHT - (i*10 + (*s - '0'));
+		else i = HEIGHT - i;
+		switch(board[i][j].type) {
+			case 'N': update_knight(board, i, j); x ^= x; break;
+			case 'b': case 'B': update_bishop(board, i, j); x^=x; break;
+			case 'p': update_pawn(board, i, j, 1); x^=x; break;
+			case 'K': puts("\x1b[35;1mYou can't move happy king. He generates 1 point each turn.\x1b[0m"); 
+						 wait(2); print_matrix(board); return; break;
+			case 'R': puts("\x1b[35;1mSuicide rook sprints forward and explodes upon contact" 
+							" \nkilling both himself and target hit.\x1b[0m");
+						wait(3); print_matrix(board); return; break;	
+			case 0: puts("The field is empty."); wait(2); print_matrix(board); return; break;
+			return; break;
+		}
+	}while(x);
+	system("tput reset");
+	print_tutorial(board);
+	remove_states(board);
 }

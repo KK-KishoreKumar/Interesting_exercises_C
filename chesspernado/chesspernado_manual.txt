@@ -23,6 +23,8 @@
 ~
 @2# COMMANDS SUPPORTED:@
 /@7back@ - goes back to the main menu.
+/@7hint@ - prints @2available@ places where a certain piece can move.
+	Or prints out info for Happy King, Suicide Rook or empty piece.
 /@7random@ - only at init_setup (beginning stage). 
 	Generates 3 knights and 2 bishops on random positions.
 /@1exit@, /@1end@  - exits the program.
